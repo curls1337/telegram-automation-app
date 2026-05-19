@@ -1,0 +1,75 @@
+{
+  "auth": {
+    "login_title": "Login",
+    "register_title": "Register",
+    "email_label": "Email",
+    "password_label": "Password",
+    "login_button": "Login",
+    "register_button": "Register",
+    "forgot_password": "Forgot password?",
+    "reset_password_title": "Reset Password",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "login": {
+      "title": "Login",
+      "submit": "Login",
+      "registerLink": "Create an account",
+      "forgotLink": "Forgot password?"
+    },
+    "register": {
+      "title": "Register",
+      "submit": "Register",
+      "loginLink": "Already have an account? Login",
+      "passwordHint": "Min 8 characters, at least 1 letter and 1 number"
+    },
+    "forgot": {
+      "title": "Forgot Password",
+      "description": "Enter your email address and we will send you a link to reset your password.",
+      "submit": "Send Reset Link",
+      "loginLink": "Back to login"
+    },
+    "reset": {
+      "title": "Reset Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Reset Password",
+      "loginLink": "Back to login"
+    },
+    "invitation": {
+      "title": "Accept Invitation",
+      "description": "You have been invited to join {{tenant}}. Set your password to accept.",
+      "submit": "Accept & Set Password",
+      "loginLink": "Already have an account? Login"
+    }
+  },
+  "errors": {
+    "validation_failed": "Validation failed",
+    "unauthenticated": "Please log in first",
+    "forbidden": "You do not have access",
+    "not_found": "Page not found",
+    "internal_error": "An internal error occurred",
+    "rate_limit": "Too many requests, please try again later"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "connections": "Connections",
+    "posts": "Scheduled Posts",
+    "broadcasts": "Broadcasts",
+    "autoReply": "Auto-Reply",
+    "auto_reply": "Auto Reply",
+    "subscribers": "Subscribers",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "admin": "Admin",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "connections_card": "Telegram Connections",
+    "posts_card": "Scheduled Posts",
+    "broadcasts_card": "Broadcasts",
+    "subscribers_card": "Subscribers"
+  }
+}

@@ -1,0 +1,98 @@
+<%- include('../partials/flash') %>
+
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-2xl font-bold mb-6"><%= title %></h1>
+
+  <% if (error) { %>
+    <div class="alert alert-error mb-4">
+      <p><%= error %></p>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/auto-reply" class="max-w-2xl">
+    <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'function' ? csrfToken() : '' %>">
+
+    <!-- Trigger Kind -->
+    <div class="form-group mb-4">
+      <label for="trigger_kind" class="label font-semibold">Trigger Type</label>
+      <select name="trigger_kind" id="trigger_kind" class="select select-bordered w-full" required>
+        <option value="exact" <%= (values && values.trigger_kind === 'exact') ? 'selected' : '' %>>Exact Match</option>
+        <option value="contains" <%= (values && values.trigger_kind === 'contains') ? 'selected' : '' %>>Contains</option>
+        <option value="regex" <%= (values && values.trigger_kind === 'regex') ? 'selected' : '' %>>Regex</option>
+      </select>
+      <p class="text-sm text-gray-500 mt-1">
+        <strong>Exact:</strong> message must match exactly.
+        <strong>Contains:</strong> message must contain the value.
+        <strong>Regex:</strong> message must match the regular expression.
+      </p>
+    </div>
+
+    <!-- Trigger Value -->
+    <div class="form-group mb-4">
+      <label for="trigger_value" class="label font-semibold">Trigger Value</label>
+      <input type="text" name="trigger_value" id="trigger_value"
+        class="input input-bordered w-full"
+        placeholder="Enter keyword, phrase, or regex pattern"
+        value="<%= (values && values.trigger_value) ? values.trigger_value : '' %>"
+        required>
+    </div>
+
+    <!-- Response -->
+    <div class="form-group mb-4">
+      <label for="response" class="label font-semibold">Response</label>
+      <textarea name="response" id="response"
+        class="textarea textarea-bordered w-full" rows="4"
+        placeholder="Enter the auto-reply response text"
+        required><%= (values && values.response) ? values.response : '' %></textarea>
+    </div>
+
+    <!-- Priority -->
+    <div class="form-group mb-4">
+      <label for="priority" class="label font-semibold">Priority</label>
+      <input type="number" name="priority" id="priority"
+        class="input input-bordered w-full"
+        min="0" max="10000"
+        value="<%= (values && values.priority !== undefined) ? values.priority : 0 %>"
+        required>
+      <p class="text-sm text-gray-500 mt-1">Lower number = higher priority. Rules are evaluated in priority order (ascending).</p>
+    </div>
+
+    <!-- Connection -->
+    <div class="form-group mb-4">
+      <label for="connection_id" class="label font-semibold">Connection</label>
+      <select name="connection_id" id="connection_id" class="select select-bordered w-full">
+        <option value="">All Connections</option>
+        <% connections.forEach(function(conn) { %>
+          <option value="<%= conn.id %>" <%= (values && values.connection_id === conn.id) ? 'selected' : '' %>>
+            <%= conn.display_name %> (<%= conn.kind %>)
+          </option>
+        <% }); %>
+      </select>
+      <p class="text-sm text-gray-500 mt-1">Leave empty to apply to all connections.</p>
+    </div>
+
+    <!-- Case Sensitive -->
+    <div class="form-group mb-4">
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" name="case_sensitive" class="checkbox"
+          <%= (values && values.case_sensitive) ? 'checked' : '' %>>
+        <span class="label-text font-semibold">Case Sensitive</span>
+      </label>
+    </div>
+
+    <!-- Active -->
+    <div class="form-group mb-6">
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" name="is_active" value="on" class="checkbox"
+          <%= (!values || values.is_active !== false) ? 'checked' : '' %>>
+        <span class="label-text font-semibold">Active</span>
+      </label>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary">Create Rule</button>
+      <a href="/auto-reply" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>

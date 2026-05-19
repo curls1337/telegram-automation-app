@@ -1,0 +1,61 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'New Webhook' %></h1>
+  <a href="/webhooks" style="font-size:0.875rem;color:#3182ce;">← Back to Webhooks</a>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fed7d7;color:#c53030;border-radius:4px;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <form method="POST" action="/webhooks">
+    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+    <!-- URL -->
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Endpoint URL</label>
+      <input type="url" name="url" required placeholder="https://example.com/webhook"
+        value="<%= typeof formData !== 'undefined' && formData.url ? formData.url : '' %>"
+        style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+      <p style="font-size:0.75rem;color:#718096;margin-top:0.25rem;">The URL where event payloads will be POSTed.</p>
+    </div>
+
+    <!-- Secret -->
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Signing Secret</label>
+      <input type="text" name="secret" required placeholder="your-webhook-secret"
+        value="<%= typeof formData !== 'undefined' && formData.secret ? formData.secret : '' %>"
+        style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+      <p style="font-size:0.75rem;color:#718096;margin-top:0.25rem;">Used to sign payloads with HMAC-SHA256. Keep this secret safe.</p>
+    </div>
+
+    <!-- Events -->
+    <div style="margin-bottom:1.5rem;">
+      <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.5rem;">Events</label>
+      <p style="font-size:0.75rem;color:#718096;margin-bottom:0.5rem;">Select which events should trigger this webhook.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:0.5rem;">
+        <% if (typeof events !== 'undefined') { %>
+          <% events.forEach(function(evt) { %>
+            <% var checked = typeof formData !== 'undefined' && formData.events && (Array.isArray(formData.events) ? formData.events.includes(evt) : formData.events === evt); %>
+            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;cursor:pointer;">
+              <input type="checkbox" name="events" value="<%= evt %>" <%= checked ? 'checked' : '' %> />
+              <%= evt %>
+            </label>
+          <% }); %>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div style="display:flex;gap:0.75rem;">
+      <button type="submit" style="padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+        Create Webhook
+      </button>
+      <a href="/webhooks" style="padding:0.5rem 1.5rem;background:#edf2f7;color:#4a5568;border-radius:4px;font-size:0.875rem;text-decoration:none;">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>

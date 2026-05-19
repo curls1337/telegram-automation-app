@@ -1,0 +1,86 @@
+<%- include('../partials/flash') %>
+
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-2xl font-bold mb-6"><%= title %></h1>
+
+  <% if (error) { %>
+    <div class="alert alert-error mb-4">
+      <p><%= error %></p>
+    </div>
+  <% } %>
+
+  <% if (success) { %>
+    <div class="alert alert-success mb-4">
+      <p><%= success %></p>
+    </div>
+  <% } %>
+
+  <form method="POST" action="/auto-reply/ai-settings" class="max-w-2xl">
+    <input type="hidden" name="_csrf" value="<%= typeof csrfToken === 'function' ? csrfToken() : '' %>">
+
+    <!-- Enable AI Auto-Reply -->
+    <div class="form-group mb-6">
+      <label class="label cursor-pointer justify-start gap-3">
+        <input type="checkbox" name="is_enabled" value="on" class="toggle toggle-primary"
+          <%= (settings && settings.isEnabled) ? 'checked' : '' %>>
+        <span class="label-text font-semibold text-lg">Enable AI Auto-Reply</span>
+      </label>
+      <p class="text-sm text-gray-500 mt-1">
+        When enabled, messages that don't match any keyword rule will be answered by AI (Google Gemini).
+      </p>
+    </div>
+
+    <!-- API Key -->
+    <div class="form-group mb-4">
+      <label for="api_key" class="label font-semibold">Gemini API Key</label>
+      <% if (settings && settings.hasApiKey) { %>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="badge badge-success">API Key configured</span>
+          <span class="text-sm text-gray-500">Enter a new key below to replace it</span>
+        </div>
+      <% } %>
+      <input type="password" name="api_key" id="api_key"
+        class="input input-bordered w-full"
+        placeholder="<%= (settings && settings.hasApiKey) ? '••••••••••••••••' : 'Enter your Gemini API key' %>"
+        autocomplete="off">
+      <p class="text-sm text-gray-500 mt-1">
+        Your API key will be validated before saving and stored encrypted. 
+        Get a key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="link link-primary">Google AI Studio</a>.
+      </p>
+    </div>
+
+    <!-- System Prompt -->
+    <div class="form-group mb-4">
+      <label for="system_prompt" class="label font-semibold">System Prompt</label>
+      <textarea name="system_prompt" id="system_prompt"
+        class="textarea textarea-bordered w-full" rows="6"
+        placeholder="You are a helpful assistant for our Telegram bot. Answer questions politely and concisely."><%= (settings && settings.systemPrompt) ? settings.systemPrompt : '' %></textarea>
+      <p class="text-sm text-gray-500 mt-1">
+        This prompt is sent with every AI request to set the context and tone of responses.
+      </p>
+    </div>
+
+    <!-- Daily Token Limit -->
+    <div class="form-group mb-6">
+      <label for="daily_token_limit" class="label font-semibold">Daily Token Limit</label>
+      <input type="number" name="daily_token_limit" id="daily_token_limit"
+        class="input input-bordered w-full"
+        min="0" step="1000"
+        placeholder="Leave empty for unlimited"
+        value="<%= (settings && settings.dailyTokenLimit) ? settings.dailyTokenLimit : '' %>">
+      <p class="text-sm text-gray-500 mt-1">
+        Maximum total tokens (input + output) per day. Leave empty for no limit.
+        <% if (usage) { %>
+          <br>Today's usage: <strong><%= usage.totalTokens.toLocaleString() %></strong> tokens
+          (<%= usage.tokensIn.toLocaleString() %> in / <%= usage.tokensOut.toLocaleString() %> out)
+        <% } %>
+      </p>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary">Save Settings</button>
+      <a href="/auto-reply" class="btn btn-ghost">Back to Rules</a>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,98 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Subscribers' %></h1>
+  <a href="/subscribers/export" style="display:inline-block;padding:0.5rem 1rem;background:#38a169;color:#fff;border-radius:4px;font-size:0.875rem;text-decoration:none;" id="export-btn">
+    ⬇ Export CSV
+  </a>
+</div>
+
+<!-- Filters -->
+<div style="margin-bottom:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+  <form method="get" action="/subscribers" style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+    <input type="text" name="search" placeholder="Search by name/username..." value="<%= typeof query !== 'undefined' && query.search ? query.search : '' %>" style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;min-width:200px;" />
+    <select name="status" style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="">All Status</option>
+      <option value="active" <%= typeof query !== 'undefined' && query.status === 'active' ? 'selected' : '' %>>Active</option>
+      <option value="blocked" <%= typeof query !== 'undefined' && query.status === 'blocked' ? 'selected' : '' %>>Blocked</option>
+      <option value="deactivated" <%= typeof query !== 'undefined' && query.status === 'deactivated' ? 'selected' : '' %>>Deactivated</option>
+    </select>
+    <button type="submit" style="padding:0.4rem 0.75rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">Filter</button>
+  </form>
+</div>
+
+<% if (typeof subscribers !== 'undefined' && subscribers.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Name</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Username</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Language</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">First Seen</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Last Active</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% subscribers.forEach(function(sub) { %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;">
+            <%= sub.first_name || '' %> <%= sub.last_name || '' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;">
+            <%= sub.username ? '@' + sub.username : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= sub.language_code || '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (sub.status === 'active') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Active</span>
+            <% } else if (sub.status === 'blocked') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fff5f5;color:#c53030;">Blocked</span>
+            <% } else { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fffaf0;color:#c05621;"><%= sub.status %></span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= sub.first_seen_at ? new Date(sub.first_seen_at).toLocaleDateString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= sub.last_active_at ? new Date(sub.last_active_at).toLocaleDateString() : '—' %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <!-- Pagination -->
+  <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <div style="margin-top:1rem;display:flex;justify-content:center;gap:0.5rem;align-items:center;">
+      <% if (page > 1) { %>
+        <a href="/subscribers?page=<%= page - 1 %><%= typeof query !== 'undefined' && query.status ? '&status=' + query.status : '' %><%= typeof query !== 'undefined' && query.search ? '&search=' + query.search : '' %>" style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;text-decoration:none;color:#3182ce;">← Prev</a>
+      <% } %>
+      <span style="font-size:0.875rem;color:#718096;">Page <%= page %> of <%= totalPages %> (<%= total %> total)</span>
+      <% if (page < totalPages) { %>
+        <a href="/subscribers?page=<%= page + 1 %><%= typeof query !== 'undefined' && query.status ? '&status=' + query.status : '' %><%= typeof query !== 'undefined' && query.search ? '&search=' + query.search : '' %>" style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;text-decoration:none;color:#3182ce;">Next →</a>
+      <% } %>
+    </div>
+  <% } %>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;margin-bottom:1rem;">No subscribers yet. Subscribers will appear here when they interact with your bots.</p>
+  </div>
+<% } %>
+
+<script>
+  document.getElementById('export-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    fetch('/subscribers/export')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.url) {
+          window.open(data.url, '_blank');
+        }
+      })
+      .catch(function(err) {
+        alert('Export failed: ' + err.message);
+      });
+  });
+</script>

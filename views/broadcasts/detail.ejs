@@ -1,0 +1,197 @@
+<% if (typeof broadcast !== 'undefined' && broadcast) { %>
+  <% var payload = typeof broadcast.payload === 'string' ? JSON.parse(broadcast.payload) : (broadcast.payload || {}); %>
+  <% var total = broadcast.total_targets || 0; %>
+  <% var sent = broadcast.sent_count || 0; %>
+  <% var failed = broadcast.failed_count || 0; %>
+  <% var blocked = broadcast.blocked_count || 0; %>
+  <% var processed = sent + failed + blocked; %>
+  <% var pct = total > 0 ? Math.round((processed / total) * 100) : 0; %>
+
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+    <div>
+      <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Broadcast Detail' %></h1>
+      <p style="color:#718096;margin-top:0.25rem;font-size:0.875rem;">
+        Created: <%= broadcast.created_at ? new Date(broadcast.created_at).toLocaleString() : '—' %>
+      </p>
+    </div>
+    <a href="/broadcasts" style="font-size:0.875rem;color:#3182ce;">← Back to Broadcasts</a>
+  </div>
+
+  <div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+    <!-- Status badge -->
+    <div style="margin-bottom:1rem;">
+      <span style="font-size:0.75rem;text-transform:uppercase;color:#718096;font-weight:500;">Status</span>
+      <div style="margin-top:0.25rem;">
+        <% if (broadcast.status === 'pending') { %>
+          <span id="status-badge" style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.875rem;background:#ebf8ff;color:#2b6cb0;font-weight:500;">Pending</span>
+        <% } else if (broadcast.status === 'running') { %>
+          <span id="status-badge" style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.875rem;background:#fefcbf;color:#975a16;font-weight:500;">Running</span>
+        <% } else if (broadcast.status === 'paused') { %>
+          <span id="status-badge" style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.875rem;background:#fed7d7;color:#9b2c2c;font-weight:500;">Paused</span>
+        <% } else if (broadcast.status === 'completed') { %>
+          <span id="status-badge" style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.875rem;background:#f0fff4;color:#276749;font-weight:500;">Completed</span>
+        <% } else if (broadcast.status === 'cancelled') { %>
+          <span id="status-badge" style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.875rem;background:#f7fafc;color:#718096;font-weight:500;">Cancelled</span>
+        <% } else { %>
+          <span id="status-badge" style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.875rem;background:#f7fafc;color:#718096;font-weight:500;"><%= broadcast.status %></span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="margin-bottom:1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <span style="font-size:0.75rem;text-transform:uppercase;color:#718096;font-weight:500;">Progress</span>
+        <span id="progress-pct" style="font-size:0.875rem;font-weight:600;color:#4a5568;"><%= pct %>%</span>
+      </div>
+      <div style="height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+        <div id="progress-bar" style="height:100%;width:<%= pct %>%;background:<%= broadcast.status === 'completed' ? '#48bb78' : '#3182ce' %>;border-radius:4px;transition:width 0.3s ease;"></div>
+      </div>
+    </div>
+
+    <!-- Counters -->
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:1rem;margin-bottom:1.25rem;">
+      <div style="text-align:center;padding:0.75rem;background:#f7fafc;border-radius:4px;">
+        <div id="counter-total" style="font-size:1.25rem;font-weight:600;color:#4a5568;"><%= total %></div>
+        <div style="font-size:0.75rem;color:#718096;">Total</div>
+      </div>
+      <div style="text-align:center;padding:0.75rem;background:#f0fff4;border-radius:4px;">
+        <div id="counter-sent" style="font-size:1.25rem;font-weight:600;color:#276749;"><%= sent %></div>
+        <div style="font-size:0.75rem;color:#718096;">Sent</div>
+      </div>
+      <div style="text-align:center;padding:0.75rem;background:#fff5f5;border-radius:4px;">
+        <div id="counter-failed" style="font-size:1.25rem;font-weight:600;color:#c53030;"><%= failed %></div>
+        <div style="font-size:0.75rem;color:#718096;">Failed</div>
+      </div>
+      <div style="text-align:center;padding:0.75rem;background:#fffaf0;border-radius:4px;">
+        <div id="counter-blocked" style="font-size:1.25rem;font-weight:600;color:#dd6b20;"><%= blocked %></div>
+        <div style="font-size:0.75rem;color:#718096;">Blocked</div>
+      </div>
+    </div>
+
+    <!-- Message preview -->
+    <div style="margin-bottom:1.25rem;">
+      <span style="font-size:0.75rem;text-transform:uppercase;color:#718096;font-weight:500;">Message</span>
+      <div style="margin-top:0.25rem;padding:0.75rem;background:#f7fafc;border-radius:4px;font-size:0.875rem;color:#4a5568;white-space:pre-wrap;word-break:break-word;">
+        <%= payload.text || '(no text)' %>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <% if (broadcast.status !== 'completed' && broadcast.status !== 'cancelled') { %>
+      <div style="display:flex;gap:0.75rem;padding-top:0.75rem;border-top:1px solid #e2e8f0;">
+        <% if (broadcast.status === 'running' || broadcast.status === 'pending') { %>
+          <form method="POST" action="/broadcasts/<%= broadcast.id %>/pause" style="display:inline;">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+            <button type="submit" style="padding:0.5rem 1rem;background:#dd6b20;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+              Pause
+            </button>
+          </form>
+        <% } %>
+        <% if (broadcast.status === 'paused') { %>
+          <form method="POST" action="/broadcasts/<%= broadcast.id %>/resume" style="display:inline;">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+            <button type="submit" style="padding:0.5rem 1rem;background:#38a169;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+              Resume
+            </button>
+          </form>
+        <% } %>
+        <form method="POST" action="/broadcasts/<%= broadcast.id %>/cancel" style="display:inline;">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button type="submit" style="padding:0.5rem 1rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;" onclick="return confirm('Are you sure you want to cancel this broadcast?')">
+            Cancel Broadcast
+          </button>
+        </form>
+      </div>
+    <% } %>
+
+    <% if (broadcast.completed_at) { %>
+      <div style="margin-top:1rem;font-size:0.875rem;color:#718096;">
+        Completed: <%= new Date(broadcast.completed_at).toLocaleString() %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Polling script for real-time progress -->
+  <% if (broadcast.status === 'running' || broadcast.status === 'pending') { %>
+    <script>
+    (function() {
+      var broadcastId = '<%= broadcast.id %>';
+      var pollInterval = 5000;
+      var timer = null;
+
+      function updateProgress() {
+        fetch('/broadcasts/' + broadcastId + '/progress')
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (!data) return;
+
+            var total = data.total_targets || 0;
+            var sent = data.sent_count || 0;
+            var failed = data.failed_count || 0;
+            var blocked = data.blocked_count || 0;
+            var processed = sent + failed + blocked;
+            var pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+
+            // Update counters
+            var counterTotal = document.getElementById('counter-total');
+            var counterSent = document.getElementById('counter-sent');
+            var counterFailed = document.getElementById('counter-failed');
+            var counterBlocked = document.getElementById('counter-blocked');
+            if (counterTotal) counterTotal.textContent = total;
+            if (counterSent) counterSent.textContent = sent;
+            if (counterFailed) counterFailed.textContent = failed;
+            if (counterBlocked) counterBlocked.textContent = blocked;
+
+            // Update progress bar
+            var progressBar = document.getElementById('progress-bar');
+            var progressPct = document.getElementById('progress-pct');
+            if (progressBar) progressBar.style.width = pct + '%';
+            if (progressPct) progressPct.textContent = pct + '%';
+
+            // Update status badge
+            var statusBadge = document.getElementById('status-badge');
+            if (statusBadge && data.status) {
+              var statusColors = {
+                pending: { bg: '#ebf8ff', color: '#2b6cb0', text: 'Pending' },
+                running: { bg: '#fefcbf', color: '#975a16', text: 'Running' },
+                paused: { bg: '#fed7d7', color: '#9b2c2c', text: 'Paused' },
+                completed: { bg: '#f0fff4', color: '#276749', text: 'Completed' },
+                cancelled: { bg: '#f7fafc', color: '#718096', text: 'Cancelled' }
+              };
+              var s = statusColors[data.status] || statusColors.pending;
+              statusBadge.style.background = s.bg;
+              statusBadge.style.color = s.color;
+              statusBadge.textContent = s.text;
+
+              if (data.status === 'completed') {
+                if (progressBar) progressBar.style.background = '#48bb78';
+              }
+            }
+
+            // Stop polling if completed or cancelled
+            if (data.status === 'completed' || data.status === 'cancelled') {
+              if (timer) {
+                clearInterval(timer);
+                timer = null;
+              }
+            }
+          })
+          .catch(function(err) {
+            // Silently ignore fetch errors
+          });
+      }
+
+      timer = setInterval(updateProgress, pollInterval);
+    })();
+    </script>
+  <% } %>
+
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;margin-bottom:1rem;">Broadcast not found.</p>
+    <a href="/broadcasts" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+      ← Back to Broadcasts
+    </a>
+  </div>
+<% } %>

@@ -1,0 +1,75 @@
+{
+  "auth": {
+    "login_title": "Masuk",
+    "register_title": "Daftar",
+    "email_label": "Email",
+    "password_label": "Kata Sandi",
+    "login_button": "Masuk",
+    "register_button": "Daftar",
+    "forgot_password": "Lupa kata sandi?",
+    "reset_password_title": "Atur Ulang Kata Sandi",
+    "logout": "Keluar",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "name": "Nama",
+    "login": {
+      "title": "Masuk",
+      "submit": "Masuk",
+      "registerLink": "Buat akun baru",
+      "forgotLink": "Lupa kata sandi?"
+    },
+    "register": {
+      "title": "Daftar",
+      "submit": "Daftar",
+      "loginLink": "Sudah punya akun? Masuk",
+      "passwordHint": "Min 8 karakter, minimal 1 huruf dan 1 angka"
+    },
+    "forgot": {
+      "title": "Lupa Kata Sandi",
+      "description": "Masukkan alamat email Anda dan kami akan mengirimkan link untuk mengatur ulang kata sandi.",
+      "submit": "Kirim Link Reset",
+      "loginLink": "Kembali ke login"
+    },
+    "reset": {
+      "title": "Atur Ulang Kata Sandi",
+      "newPassword": "Kata Sandi Baru",
+      "confirmPassword": "Konfirmasi Kata Sandi",
+      "submit": "Atur Ulang Kata Sandi",
+      "loginLink": "Kembali ke login"
+    },
+    "invitation": {
+      "title": "Terima Undangan",
+      "description": "Anda telah diundang untuk bergabung dengan {{tenant}}. Atur kata sandi untuk menerima.",
+      "submit": "Terima & Atur Kata Sandi",
+      "loginLink": "Sudah punya akun? Masuk"
+    }
+  },
+  "errors": {
+    "validation_failed": "Validasi gagal",
+    "unauthenticated": "Silakan masuk terlebih dahulu",
+    "forbidden": "Anda tidak memiliki akses",
+    "not_found": "Halaman tidak ditemukan",
+    "internal_error": "Terjadi kesalahan internal",
+    "rate_limit": "Terlalu banyak permintaan, silakan coba lagi nanti"
+  },
+  "nav": {
+    "dashboard": "Dasbor",
+    "connections": "Koneksi",
+    "posts": "Posting Terjadwal",
+    "broadcasts": "Broadcast",
+    "autoReply": "Auto-Reply",
+    "auto_reply": "Auto Reply",
+    "subscribers": "Subscriber",
+    "analytics": "Analitik",
+    "settings": "Pengaturan",
+    "admin": "Admin",
+    "logout": "Keluar"
+  },
+  "dashboard": {
+    "title": "Dasbor",
+    "connections_card": "Koneksi Telegram",
+    "posts_card": "Posting Terjadwal",
+    "broadcasts_card": "Broadcast",
+    "subscribers_card": "Subscriber"
+  }
+}

@@ -1,0 +1,32 @@
+<% var title = typeof t === 'function' ? t('auth.login.title') : 'Login'; %>
+
+<h1 class="auth-title"><%= typeof t === 'function' ? t('auth.login.title') : 'Login' %></h1>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="error-msg"><%= error %></div>
+<% } %>
+
+<form action="/login" method="POST">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="form-group">
+    <label for="email"><%= typeof t === 'function' ? t('auth.email') : 'Email' %></label>
+    <input type="email" id="email" name="email" required autocomplete="email"
+           value="<%= typeof email !== 'undefined' ? email : '' %>">
+  </div>
+
+  <div class="form-group">
+    <label for="password"><%= typeof t === 'function' ? t('auth.password') : 'Password' %></label>
+    <input type="password" id="password" name="password" required autocomplete="current-password">
+  </div>
+
+  <button type="submit" class="btn-primary">
+    <%= typeof t === 'function' ? t('auth.login.submit') : 'Login' %>
+  </button>
+</form>
+
+<div class="auth-links">
+  <a href="/register"><%= typeof t === 'function' ? t('auth.login.registerLink') : 'Create an account' %></a>
+  &middot;
+  <a href="/forgot-password"><%= typeof t === 'function' ? t('auth.login.forgotLink') : 'Forgot password?' %></a>
+</div>

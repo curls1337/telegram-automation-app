@@ -1,0 +1,111 @@
+<h1>Manage Plans</h1>
+
+<% if (success) { %>
+  <div style="background:#d4edda;border:1px solid #c3e6cb;padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;color:#155724;">
+    <%= success %>
+  </div>
+<% } %>
+
+<% if (error) { %>
+  <div style="background:#f8d7da;border:1px solid #f5c6cb;padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;color:#721c24;">
+    <%= error %>
+  </div>
+<% } %>
+
+<!-- Create Plan Form -->
+<section style="margin-bottom:2rem;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <h2 style="margin-bottom:1rem;font-size:1.1rem;">Create New Plan</h2>
+  <form method="POST" action="/admin/plans">
+    <% if (typeof csrfToken !== 'undefined') { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% } %>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem;">
+      <div>
+        <label for="name">Name *</label>
+        <input type="text" id="name" name="name" required style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="price_cents">Price (cents)</label>
+        <input type="number" id="price_cents" name="price_cents" value="0" min="0" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="duration_months">Duration (months)</label>
+        <input type="number" id="duration_months" name="duration_months" value="1" min="1" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="max_bot_connections">Max Bot Connections</label>
+        <input type="number" id="max_bot_connections" name="max_bot_connections" value="1" min="0" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="max_user_connections">Max User Connections</label>
+        <input type="number" id="max_user_connections" name="max_user_connections" value="0" min="0" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="max_subscribers">Max Subscribers</label>
+        <input type="number" id="max_subscribers" name="max_subscribers" value="100" min="0" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="max_broadcasts_per_month">Max Broadcasts/Month</label>
+        <input type="number" id="max_broadcasts_per_month" name="max_broadcasts_per_month" value="10" min="0" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+      <div>
+        <label for="max_auto_reply_rules">Max Auto-Reply Rules</label>
+        <input type="number" id="max_auto_reply_rules" name="max_auto_reply_rules" value="5" min="0" style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+      </div>
+    </div>
+    <button type="submit" style="margin-top:1rem;padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;cursor:pointer;">Create Plan</button>
+  </form>
+</section>
+
+<!-- Plans Table -->
+<section style="padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <h2 style="margin-bottom:1rem;font-size:1.1rem;">Existing Plans</h2>
+  <% if (plans.length === 0) { %>
+    <p style="color:#666;">No plans found.</p>
+  <% } else { %>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+          <tr style="background:#f1f3f5;text-align:left;">
+            <th style="padding:0.5rem;">Name</th>
+            <th style="padding:0.5rem;">Price</th>
+            <th style="padding:0.5rem;">Duration</th>
+            <th style="padding:0.5rem;">Bots</th>
+            <th style="padding:0.5rem;">Users</th>
+            <th style="padding:0.5rem;">Subscribers</th>
+            <th style="padding:0.5rem;">Broadcasts</th>
+            <th style="padding:0.5rem;">Rules</th>
+            <th style="padding:0.5rem;">Active</th>
+            <th style="padding:0.5rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% plans.forEach(function(plan) { %>
+            <tr style="border-bottom:1px solid #e9ecef;">
+              <td style="padding:0.5rem;"><%= plan.name %></td>
+              <td style="padding:0.5rem;"><%= plan.price_cents %></td>
+              <td style="padding:0.5rem;"><%= plan.duration_months %>mo</td>
+              <td style="padding:0.5rem;"><%= plan.max_bot_connections %></td>
+              <td style="padding:0.5rem;"><%= plan.max_user_connections %></td>
+              <td style="padding:0.5rem;"><%= plan.max_subscribers %></td>
+              <td style="padding:0.5rem;"><%= plan.max_broadcasts_per_month %></td>
+              <td style="padding:0.5rem;"><%= plan.max_auto_reply_rules %></td>
+              <td style="padding:0.5rem;"><%= plan.is_active ? 'Yes' : 'No' %></td>
+              <td style="padding:0.5rem;">
+                <form method="POST" action="/admin/plans/<%= plan.id %>" style="display:inline;">
+                  <% if (typeof csrfToken !== 'undefined') { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <% } %>
+                  <input type="hidden" name="is_active" value="<%= plan.is_active ? 'false' : 'true' %>">
+                  <button type="submit" style="padding:0.25rem 0.5rem;background:<%= plan.is_active ? '#dc3545' : '#28a745' %>;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:0.8rem;">
+                    <%= plan.is_active ? 'Deactivate' : 'Activate' %>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

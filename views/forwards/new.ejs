@@ -1,0 +1,89 @@
+<div class="page-header" style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'New Forward Rule' %></h1>
+  <p style="color:#718096;margin-top:0.25rem;">Auto-forward messages from a source chat to one or more destinations.</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #feb2b2;border-radius:4px;color:#c53030;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<form method="POST" action="/forwards" style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:640px;">
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+  <!-- Connection select -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="connection_id" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Connection *
+    </label>
+    <select id="connection_id" name="connection_id" required
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="">Select a connection...</option>
+      <% if (typeof connections !== 'undefined') { %>
+        <% connections.forEach(function(conn) { %>
+          <option value="<%= conn.id %>" <%= (typeof formData !== 'undefined' && formData.connection_id === conn.id) ? 'selected' : '' %>>
+            <%= conn.display_name || conn.username || conn.id %> (<%= conn.kind %>)
+          </option>
+        <% }); %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- Source chat -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="source_chat" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Source Chat ID *
+    </label>
+    <input type="text" id="source_chat" name="source_chat" required
+      value="<%= (typeof formData !== 'undefined' && formData.source_chat) ? formData.source_chat : '' %>"
+      placeholder="e.g. -1001234567890 or @channelname"
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    <p style="font-size:0.75rem;color:#718096;margin-top:0.25rem;">The chat/channel ID to monitor for new messages.</p>
+  </div>
+
+  <!-- Destinations -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="destinations" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Destination Chat IDs * (comma-separated)
+    </label>
+    <textarea id="destinations" name="destinations" rows="3" required
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;"
+      placeholder="-1001234567891, -1001234567892"><%= (typeof formData !== 'undefined' && formData.destinations) ? formData.destinations : '' %></textarea>
+    <p style="font-size:0.75rem;color:#718096;margin-top:0.25rem;">One or more chat/channel IDs where messages will be forwarded.</p>
+  </div>
+
+  <!-- Filters (JSON) -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="filters" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Filters (optional, JSON)
+    </label>
+    <textarea id="filters" name="filters" rows="4"
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;font-family:monospace;"
+      placeholder='{"keywords": ["promo", "sale"], "media_types": ["photo", "video"], "senders": ["123456"]}'><%= (typeof formData !== 'undefined' && formData.filters) ? formData.filters : '' %></textarea>
+    <p style="font-size:0.75rem;color:#718096;margin-top:0.25rem;">
+      Optional JSON object with filter criteria. Leave empty to forward all messages.<br/>
+      Fields: <code>keywords</code> (array), <code>media_types</code> (array: photo, video, document, audio, voice, sticker), <code>senders</code> (array of user IDs).
+    </p>
+  </div>
+
+  <!-- Remove header checkbox -->
+  <div style="margin-bottom:1.25rem;">
+    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+      <input type="checkbox" name="remove_header" value="on"
+        <%= (typeof formData !== 'undefined' && (formData.remove_header === 'on' || formData.remove_header === true)) ? 'checked' : '' %> />
+      Remove forward header (send as new message without source attribution)
+    </label>
+    <p style="font-size:0.75rem;color:#718096;margin-top:0.25rem;">
+      When enabled, messages are copied without the "Forwarded from" header.
+    </p>
+  </div>
+
+  <!-- Submit -->
+  <div style="display:flex;gap:0.75rem;align-items:center;">
+    <button type="submit" style="padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;font-weight:500;">
+      Create Rule
+    </button>
+    <a href="/forwards" style="font-size:0.875rem;color:#718096;">Cancel</a>
+  </div>
+</form>

@@ -1,0 +1,60 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Tags' %></h1>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #fc8181;border-radius:4px;color:#c53030;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<!-- Create Tag Form -->
+<div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+  <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Create New Tag</h2>
+  <form method="post" action="/subscribers/tags" style="display:flex;gap:0.5rem;align-items:center;">
+    <% if (typeof csrfToken === 'function') { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>" />
+    <% } %>
+    <input type="text" name="name" placeholder="Tag name..." required style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;flex:1;max-width:300px;" />
+    <button type="submit" style="padding:0.4rem 0.75rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">Create Tag</button>
+  </form>
+</div>
+
+<!-- Tags List -->
+<% if (typeof tags !== 'undefined' && tags.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Name</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Created</th>
+        <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;text-transform:uppercase;color:#718096;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% tags.forEach(function(tag) { %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;">
+            <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.875rem;background:#ebf8ff;color:#2b6cb0;">
+              <%= tag.name %>
+            </span>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= tag.created_at ? new Date(tag.created_at).toLocaleDateString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;text-align:right;">
+            <form method="post" action="/subscribers/tags/<%= tag.id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this tag?');">
+              <% if (typeof csrfToken === 'function') { %>
+                <input type="hidden" name="_csrf" value="<%= csrfToken() %>" />
+              <% } %>
+              <button type="submit" style="padding:0.25rem 0.5rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;">No tags yet. Create your first tag above.</p>
+  </div>
+<% } %>

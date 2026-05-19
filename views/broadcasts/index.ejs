@@ -1,0 +1,102 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Broadcasts' %></h1>
+  <a href="/broadcasts/new" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+    + New Broadcast
+  </a>
+</div>
+
+<% if (typeof broadcasts !== 'undefined' && broadcasts.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Message</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Progress</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Created</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% broadcasts.forEach(function(broadcast) { %>
+        <% var payload = typeof broadcast.payload === 'string' ? JSON.parse(broadcast.payload) : (broadcast.payload || {}); %>
+        <% var total = broadcast.total_targets || 0; %>
+        <% var sent = broadcast.sent_count || 0; %>
+        <% var failed = broadcast.failed_count || 0; %>
+        <% var blocked = broadcast.blocked_count || 0; %>
+        <% var processed = sent + failed + blocked; %>
+        <% var pct = total > 0 ? Math.round((processed / total) * 100) : 0; %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            <a href="/broadcasts/<%= broadcast.id %>" style="color:#3182ce;">
+              <%= payload.text ? payload.text.substring(0, 50) + (payload.text.length > 50 ? '...' : '') : '(media only)' %>
+            </a>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (broadcast.status === 'pending') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#ebf8ff;color:#2b6cb0;">Pending</span>
+            <% } else if (broadcast.status === 'running') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fefcbf;color:#975a16;">Running</span>
+            <% } else if (broadcast.status === 'paused') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fed7d7;color:#9b2c2c;">Paused</span>
+            <% } else if (broadcast.status === 'completed') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Completed</span>
+            <% } else if (broadcast.status === 'cancelled') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f7fafc;color:#718096;">Cancelled</span>
+            <% } else { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f7fafc;color:#718096;"><%= broadcast.status %></span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
+                <div style="height:100%;width:<%= pct %>%;background:<%= broadcast.status === 'completed' ? '#48bb78' : '#3182ce' %>;border-radius:3px;"></div>
+              </div>
+              <span style="font-size:0.75rem;color:#718096;white-space:nowrap;"><%= sent %>/<%= total %></span>
+            </div>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= broadcast.created_at ? new Date(broadcast.created_at).toLocaleString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (broadcast.status === 'running') { %>
+              <form method="POST" action="/broadcasts/<%= broadcast.id %>/pause" style="display:inline;">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                <button type="submit" style="padding:0.25rem 0.5rem;background:#dd6b20;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">Pause</button>
+              </form>
+            <% } else if (broadcast.status === 'paused') { %>
+              <form method="POST" action="/broadcasts/<%= broadcast.id %>/resume" style="display:inline;margin-right:0.25rem;">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                <button type="submit" style="padding:0.25rem 0.5rem;background:#38a169;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">Resume</button>
+              </form>
+            <% } %>
+            <% if (broadcast.status !== 'completed' && broadcast.status !== 'cancelled') { %>
+              <form method="POST" action="/broadcasts/<%= broadcast.id %>/cancel" style="display:inline;">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                <button type="submit" style="padding:0.25rem 0.5rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;" onclick="return confirm('Cancel this broadcast?')">Cancel</button>
+              </form>
+            <% } %>
+            <a href="/broadcasts/<%= broadcast.id %>" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:#3182ce;">View</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
+      <% for (var i = 1; i <= totalPages; i++) { %>
+        <a href="/broadcasts?page=<%= i %><%= query && query.status ? '&status=' + query.status : '' %>"
+           style="padding:0.25rem 0.75rem;border-radius:4px;font-size:0.875rem;<%= i === page ? 'background:#3182ce;color:#fff;' : 'background:#edf2f7;color:#4a5568;' %>">
+          <%= i %>
+        </a>
+      <% } %>
+    </div>
+  <% } %>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;margin-bottom:1rem;">No broadcasts yet. Create your first broadcast to reach your subscribers.</p>
+    <a href="/broadcasts/new" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+      + New Broadcast
+    </a>
+  </div>
+<% } %>

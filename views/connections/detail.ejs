@@ -1,0 +1,69 @@
+<div style="max-width:640px;">
+  <div style="margin-bottom:1.5rem;">
+    <a href="/connections" style="font-size:0.875rem;color:#718096;">← Back to Connections</a>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error && !connection) { %>
+    <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #feb2b2;border-radius:4px;color:#c53030;font-size:0.875rem;" role="alert">
+      <%= error %>
+    </div>
+  <% } else if (connection) { %>
+    <div style="background:#fff;padding:1.5rem;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
+        <div>
+          <h1 style="font-size:1.5rem;font-weight:600;margin-bottom:0.25rem;">
+            <%= connection.display_name || 'Unnamed Connection' %>
+          </h1>
+          <% if (connection.username) { %>
+            <p style="color:#718096;font-size:0.875rem;">@<%= connection.username %></p>
+          <% } %>
+        </div>
+        <% if (connection.status === 'active') { %>
+          <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;font-weight:500;">Active</span>
+        <% } else if (connection.status === 'invalid') { %>
+          <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;background:#fff5f5;color:#c53030;font-weight:500;">Invalid</span>
+        <% } else { %>
+          <span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;background:#fffaf0;color:#c05621;font-weight:500;"><%= connection.status %></span>
+        <% } %>
+      </div>
+
+      <dl style="display:grid;grid-template-columns:auto 1fr;gap:0.75rem 1.5rem;font-size:0.875rem;">
+        <dt style="color:#718096;font-weight:500;">Type</dt>
+        <dd><%= connection.kind === 'bot' ? 'Bot API' : 'User (MTProto)' %></dd>
+
+        <dt style="color:#718096;font-weight:500;">Telegram ID</dt>
+        <dd><%= connection.telegram_id || '—' %></dd>
+
+        <dt style="color:#718096;font-weight:500;">Mode</dt>
+        <dd><%= connection.mode || '—' %></dd>
+
+        <dt style="color:#718096;font-weight:500;">Created</dt>
+        <dd><%= connection.created_at ? new Date(connection.created_at).toLocaleString() : '—' %></dd>
+
+        <dt style="color:#718096;font-weight:500;">Updated</dt>
+        <dd><%= connection.updated_at ? new Date(connection.updated_at).toLocaleString() : '—' %></dd>
+
+        <% if (connection.last_error) { %>
+          <dt style="color:#c53030;font-weight:500;">Last Error</dt>
+          <dd style="color:#c53030;"><%= connection.last_error %></dd>
+        <% } %>
+      </dl>
+
+      <hr style="margin:1.5rem 0;border:none;border-top:1px solid #e2e8f0;">
+
+      <div style="display:flex;justify-content:flex-end;">
+        <form method="POST" action="/connections/<%= connection.id %>/delete" onsubmit="return confirm('Are you sure you want to delete this connection? This action cannot be undone.');">
+          <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <% } %>
+          <button
+            type="submit"
+            style="padding:0.5rem 1rem;background:#fff5f5;color:#c53030;border:1px solid #feb2b2;border-radius:4px;font-size:0.875rem;cursor:pointer;"
+          >
+            Delete Connection
+          </button>
+        </form>
+      </div>
+    </div>
+  <% } %>
+</div>

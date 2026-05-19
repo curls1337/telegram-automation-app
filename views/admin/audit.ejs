@@ -1,0 +1,102 @@
+<h1>Global Audit Log</h1>
+
+<!-- Filter Form -->
+<section style="margin-bottom:1.5rem;padding:1rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <form method="GET" action="/admin/audit" style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;">
+    <div>
+      <label for="tenant_id" style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Tenant</label>
+      <select id="tenant_id" name="tenant_id" style="padding:0.4rem;border:1px solid #ccc;border-radius:4px;min-width:150px;">
+        <option value="">All Tenants</option>
+        <% if (typeof tenants !== 'undefined') { tenants.forEach(function(t) { %>
+          <option value="<%= t.id %>" <%= (typeof filters !== 'undefined' && filters.tenantId === t.id) ? 'selected' : '' %>><%= t.name %></option>
+        <% }); } %>
+      </select>
+    </div>
+    <div>
+      <label for="user_id" style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">User ID</label>
+      <input type="text" id="user_id" name="user_id" value="<%= typeof filters !== 'undefined' && filters.userId ? filters.userId : '' %>" placeholder="User ID" style="padding:0.4rem;border:1px solid #ccc;border-radius:4px;width:140px;">
+    </div>
+    <div>
+      <label for="action" style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Action</label>
+      <select id="action" name="action" style="padding:0.4rem;border:1px solid #ccc;border-radius:4px;min-width:150px;">
+        <option value="">All Actions</option>
+        <% if (typeof actions !== 'undefined') { actions.forEach(function(a) { %>
+          <option value="<%= a %>" <%= (typeof filters !== 'undefined' && filters.action === a) ? 'selected' : '' %>><%= a %></option>
+        <% }); } %>
+      </select>
+    </div>
+    <div>
+      <label for="date_from" style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">From</label>
+      <input type="date" id="date_from" name="date_from" value="<%= typeof filters !== 'undefined' && filters.dateFrom ? filters.dateFrom : '' %>" style="padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+    </div>
+    <div>
+      <label for="date_to" style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">To</label>
+      <input type="date" id="date_to" name="date_to" value="<%= typeof filters !== 'undefined' && filters.dateTo ? filters.dateTo : '' %>" style="padding:0.4rem;border:1px solid #ccc;border-radius:4px;">
+    </div>
+    <div>
+      <button type="submit" style="padding:0.4rem 1rem;background:#3182ce;color:#fff;border:none;border-radius:4px;cursor:pointer;">Filter</button>
+    </div>
+  </form>
+</section>
+
+<!-- Audit Log Table -->
+<section style="padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <% if (typeof logs !== 'undefined' && logs.length > 0) { %>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <thead>
+          <tr style="background:#f1f3f5;text-align:left;">
+            <th style="padding:0.5rem;">Timestamp</th>
+            <th style="padding:0.5rem;">Tenant</th>
+            <th style="padding:0.5rem;">User</th>
+            <th style="padding:0.5rem;">Action</th>
+            <th style="padding:0.5rem;">Resource Type</th>
+            <th style="padding:0.5rem;">Resource ID</th>
+            <th style="padding:0.5rem;">IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(function(log) { %>
+            <tr style="border-bottom:1px solid #e9ecef;">
+              <td style="padding:0.5rem;white-space:nowrap;color:#718096;">
+                <%= log.created_at ? new Date(log.created_at).toLocaleString() : '—' %>
+              </td>
+              <td style="padding:0.5rem;"><%= log.tenant_id || '—' %></td>
+              <td style="padding:0.5rem;"><%= log.user_id || 'system' %></td>
+              <td style="padding:0.5rem;">
+                <span style="display:inline-block;padding:0.125rem 0.4rem;border-radius:3px;font-size:0.75rem;background:#edf2f7;color:#4a5568;"><%= log.action %></span>
+              </td>
+              <td style="padding:0.5rem;"><%= log.resource_type || '—' %></td>
+              <td style="padding:0.5rem;font-family:monospace;font-size:0.75rem;"><%= log.resource_id || '—' %></td>
+              <td style="padding:0.5rem;font-family:monospace;font-size:0.75rem;"><%= log.ip_address || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+      <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;align-items:center;">
+        <% var baseUrl = '/admin/audit?'; %>
+        <% if (typeof filters !== 'undefined') { %>
+          <% if (filters.tenantId) baseUrl += 'tenant_id=' + filters.tenantId + '&'; %>
+          <% if (filters.userId) baseUrl += 'user_id=' + filters.userId + '&'; %>
+          <% if (filters.action) baseUrl += 'action=' + filters.action + '&'; %>
+          <% if (filters.dateFrom) baseUrl += 'date_from=' + filters.dateFrom + '&'; %>
+          <% if (filters.dateTo) baseUrl += 'date_to=' + filters.dateTo + '&'; %>
+        <% } %>
+        <% for (var i = 1; i <= totalPages; i++) { %>
+          <a href="<%= baseUrl %>page=<%= i %>"
+             style="padding:0.25rem 0.75rem;border-radius:4px;font-size:0.875rem;<%= i === page ? 'background:#3182ce;color:#fff;' : 'background:#edf2f7;color:#4a5568;' %>">
+            <%= i %>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
+
+    <p style="margin-top:0.75rem;font-size:0.8rem;color:#718096;">Total: <%= typeof total !== 'undefined' ? total : 0 %> entries</p>
+  <% } else { %>
+    <p style="color:#666;">No audit log entries found.</p>
+  <% } %>
+</section>

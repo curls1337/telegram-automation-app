@@ -1,0 +1,56 @@
+{
+  "name": "telegram-automation-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-tenant SaaS platform for Telegram bot, channel, and group automation (modular monolith Node.js).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start:web": "node src/server/index.web.js",
+    "start:worker": "node src/server/index.worker.js",
+    "start:cron": "node src/server/index.cron.js",
+    "migrate": "knex migrate:latest --knexfile knexfile.js",
+    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "seed": "node scripts/seed.js",
+    "lint": "eslint .",
+    "test": "jest",
+    "test:property": "jest --selectProjects property",
+    "test:integration": "jest --selectProjects integration"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.700.0",
+    "@aws-sdk/lib-storage": "3.700.0",
+    "@aws-sdk/s3-request-presigner": "3.700.0",
+    "@fast-csv/format": "5.0.2",
+    "@google/generative-ai": "0.21.0",
+    "bcrypt": "5.1.1",
+    "bullmq": "5.34.0",
+    "csurf": "1.11.0",
+    "ejs": "3.1.10",
+    "express": "4.21.2",
+    "file-type": "16.5.4",
+    "helmet": "8.0.0",
+    "i18next": "23.16.8",
+    "i18next-fs-backend": "2.6.0",
+    "ioredis": "5.4.2",
+    "knex": "3.1.0",
+    "multer": "1.4.5-lts.1",
+    "nodemailer": "6.9.16",
+    "pdfkit": "0.15.1",
+    "pg": "8.13.1",
+    "pino": "9.5.0",
+    "rate-limiter-flexible": "5.0.4",
+    "tar-stream": "^3.1.7",
+    "telegraf": "4.16.3",
+    "telegram": "2.26.16",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "fast-check": "3.23.1",
+    "jest": "29.7.0"
+  }
+}

@@ -1,0 +1,43 @@
+<% if (typeof user !== 'undefined' && user) { %>
+<aside style="width: 220px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1rem 0; min-height: calc(100vh - 52px);">
+  <nav>
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/dashboard" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.dashboard') : 'Dashboard' %>
+        </a>
+      </li>
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/connections" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.connections') : 'Connections' %>
+        </a>
+      </li>
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/posts" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.posts') : 'Scheduled Posts' %>
+        </a>
+      </li>
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/broadcasts" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.broadcasts') : 'Broadcasts' %>
+        </a>
+      </li>
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/auto-reply" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.autoReply') : 'Auto-Reply' %>
+        </a>
+      </li>
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/subscribers" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.subscribers') : 'Subscribers' %>
+        </a>
+      </li>
+      <li style="padding: 0.5rem 1.25rem;">
+        <a href="/analytics" style="color: #2d3748; font-size: 0.9rem;">
+          <%= typeof t === 'function' ? t('nav.analytics') : 'Analytics' %>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</aside>
+<% } %>

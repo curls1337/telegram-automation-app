@@ -1,0 +1,86 @@
+<div class="page-header" style="margin-bottom:1.5rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Campaign Enrollments' %></h1>
+    <% if (typeof campaign !== 'undefined' && campaign) { %>
+      <a href="/drip/<%= campaign.id %>" style="font-size:0.875rem;color:#718096;text-decoration:none;">&larr; Back to Campaign</a>
+    <% } else { %>
+      <a href="/drip" style="font-size:0.875rem;color:#718096;text-decoration:none;">&larr; Back to Campaigns</a>
+    <% } %>
+  </div>
+  <% if (typeof campaign !== 'undefined' && campaign) { %>
+    <p style="color:#718096;margin-top:0.25rem;">Enrollments for: <strong><%= campaign.name %></strong></p>
+  <% } %>
+</div>
+
+<!-- Manual Enroll Form -->
+<% if (typeof campaign !== 'undefined' && campaign && campaign.status === 'active') { %>
+  <div style="background:#fff;border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:0.75rem;">Manual Enrollment</h2>
+    <form method="POST" action="/drip/<%= campaign.id %>/enroll">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+      <div style="margin-bottom:0.75rem;">
+        <label for="subscriber_ids" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+          Subscriber IDs (comma-separated)
+        </label>
+        <textarea id="subscriber_ids" name="subscriber_ids" rows="3" required
+          style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;"
+          placeholder="subscriber-id-1, subscriber-id-2, subscriber-id-3"></textarea>
+      </div>
+      <button type="submit" style="padding:0.5rem 1rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+        Enroll Subscribers
+      </button>
+    </form>
+  </div>
+<% } %>
+
+<!-- Enrollments Table -->
+<% if (typeof enrollments !== 'undefined' && enrollments.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Subscriber</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Current Step</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Next Run At</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Enrolled At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% enrollments.forEach(function(enrollment) { %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#4a5568;font-family:monospace;">
+            <%= enrollment.subscriber_id %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (enrollment.status === 'running') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#ebf8ff;color:#2b6cb0;">Running</span>
+            <% } else if (enrollment.status === 'completed') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Completed</span>
+            <% } else if (enrollment.status === 'paused') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fffaf0;color:#c05621;">Paused</span>
+            <% } else if (enrollment.status === 'stopped_blocked') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fff5f5;color:#c53030;">Stopped (Blocked)</span>
+            <% } else if (enrollment.status === 'exited') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f7fafc;color:#718096;">Exited</span>
+            <% } else { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f7fafc;color:#718096;"><%= enrollment.status %></span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#4a5568;">
+            Step <%= (enrollment.current_step != null ? enrollment.current_step + 1 : '—') %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= enrollment.next_run_at ? new Date(enrollment.next_run_at).toLocaleString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= enrollment.created_at ? new Date(enrollment.created_at).toLocaleString() : '—' %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;">No enrollments yet for this campaign.</p>
+  </div>
+<% } %>

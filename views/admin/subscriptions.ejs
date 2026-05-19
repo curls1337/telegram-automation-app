@@ -1,0 +1,92 @@
+<h1>Manage Subscriptions</h1>
+
+<% if (success) { %>
+  <div style="background:#d4edda;border:1px solid #c3e6cb;padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;color:#155724;">
+    <%= success %>
+  </div>
+<% } %>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="background:#f8d7da;border:1px solid #f5c6cb;padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;color:#721c24;">
+    <%= error %>
+  </div>
+<% } %>
+
+<!-- Activate Subscription Form -->
+<section style="margin-bottom:2rem;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <h2 style="margin-bottom:1rem;font-size:1.1rem;">Activate Subscription</h2>
+  <form method="POST" action="/admin/subscriptions/activate">
+    <% if (typeof csrfToken !== 'undefined') { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% } %>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+      <div>
+        <label for="tenant_id">Tenant</label>
+        <select id="tenant_id" name="tenant_id" required style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;min-width:200px;">
+          <option value="">-- Select Tenant --</option>
+          <% tenants.forEach(function(tenant) { %>
+            <option value="<%= tenant.id %>"><%= tenant.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <div>
+        <label for="plan_id">Plan</label>
+        <select id="plan_id" name="plan_id" required style="width:100%;padding:0.4rem;border:1px solid #ccc;border-radius:4px;min-width:200px;">
+          <option value="">-- Select Plan --</option>
+          <% plans.filter(function(p) { return p.is_active; }).forEach(function(plan) { %>
+            <option value="<%= plan.id %>"><%= plan.name %> (<%= plan.duration_months %>mo)</option>
+          <% }); %>
+        </select>
+      </div>
+      <div>
+        <button type="submit" style="padding:0.5rem 1.5rem;background:#28a745;color:#fff;border:none;border-radius:4px;cursor:pointer;">Activate</button>
+      </div>
+    </div>
+  </form>
+</section>
+
+<!-- Subscriptions Table -->
+<section style="padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <h2 style="margin-bottom:1rem;font-size:1.1rem;">All Subscriptions</h2>
+  <% if (subscriptions.length === 0) { %>
+    <p style="color:#666;">No subscriptions found.</p>
+  <% } else { %>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+          <tr style="background:#f1f3f5;text-align:left;">
+            <th style="padding:0.5rem;">Tenant</th>
+            <th style="padding:0.5rem;">Plan</th>
+            <th style="padding:0.5rem;">Status</th>
+            <th style="padding:0.5rem;">Started</th>
+            <th style="padding:0.5rem;">Ends</th>
+            <th style="padding:0.5rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% subscriptions.forEach(function(sub) { %>
+            <tr style="border-bottom:1px solid #e9ecef;">
+              <td style="padding:0.5rem;"><%= sub.tenant_name %></td>
+              <td style="padding:0.5rem;"><%= sub.plan_name %></td>
+              <td style="padding:0.5rem;">
+                <span style="padding:0.15rem 0.5rem;border-radius:3px;font-size:0.8rem;background:<%= sub.status === 'active' ? '#d4edda' : '#f8d7da' %>;color:<%= sub.status === 'active' ? '#155724' : '#721c24' %>;">
+                  <%= sub.status %>
+                </span>
+              </td>
+              <td style="padding:0.5rem;"><%= new Date(sub.started_at).toLocaleDateString() %></td>
+              <td style="padding:0.5rem;"><%= new Date(sub.ends_at).toLocaleDateString() %></td>
+              <td style="padding:0.5rem;">
+                <form method="POST" action="/admin/subscriptions/<%= sub.id %>/extend" style="display:inline;">
+                  <% if (typeof csrfToken !== 'undefined') { %>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <% } %>
+                  <button type="submit" style="padding:0.25rem 0.5rem;background:#3182ce;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:0.8rem;">Extend</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

@@ -1,0 +1,133 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Member Rule' %></h1>
+  <a href="/members/rules" style="display:inline-block;padding:0.5rem 1rem;background:#edf2f7;color:#4a5568;border-radius:4px;font-size:0.875rem;">
+    ← Back to Rules
+  </a>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fed7d7;color:#9b2c2c;border-radius:4px;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<%
+  var isEdit = typeof rule !== 'undefined' && rule !== null;
+  var formAction = isEdit ? '/members/rules/' + rule.id : '/members/rules';
+  var fd = (typeof formData !== 'undefined' && formData) || {};
+  var ruleConfig = {};
+  if (isEdit && rule.config) {
+    ruleConfig = typeof rule.config === 'string' ? JSON.parse(rule.config) : rule.config;
+  }
+  var currentKind = fd.kind || (isEdit ? rule.kind : '');
+  var currentConnectionId = fd.connection_id || (isEdit ? rule.connection_id : '');
+%>
+
+<form method="POST" action="<%= formAction %>" style="background:#fff;padding:1.5rem;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:600px;">
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+  <% if (isEdit) { %>
+    <input type="hidden" name="_existing_kind" value="<%= rule.kind %>" />
+  <% } %>
+
+  <!-- Connection -->
+  <div style="margin-bottom:1rem;">
+    <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Connection</label>
+    <select name="connection_id" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" required>
+      <option value="">— Select Connection —</option>
+      <% if (typeof connections !== 'undefined') { %>
+        <% connections.forEach(function(conn) { %>
+          <option value="<%= conn.id %>" <%= conn.id === currentConnectionId ? 'selected' : '' %>>
+            <%= conn.display_name || conn.id %>
+          </option>
+        <% }); %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- Kind -->
+  <div style="margin-bottom:1rem;">
+    <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Rule Kind</label>
+    <select name="kind" id="rule-kind" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" required onchange="toggleConfigFields()">
+      <option value="">— Select Kind —</option>
+      <option value="welcome" <%= currentKind === 'welcome' ? 'selected' : '' %>>Welcome Message</option>
+      <option value="auto_kick_inactive" <%= currentKind === 'auto_kick_inactive' ? 'selected' : '' %>>Auto-Kick Inactive</option>
+      <option value="anti_spam" <%= currentKind === 'anti_spam' ? 'selected' : '' %>>Anti-Spam</option>
+    </select>
+  </div>
+
+  <!-- Active toggle -->
+  <div style="margin-bottom:1.5rem;">
+    <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+      <input type="checkbox" name="is_active" value="on"
+        <%= (!isEdit && !fd.is_active) || fd.is_active === 'on' || (isEdit && rule.is_active) ? 'checked' : '' %>
+        style="width:1rem;height:1rem;" />
+      Active
+    </label>
+  </div>
+
+  <!-- Welcome config -->
+  <div id="config-welcome" style="display:none;border-top:1px solid #e2e8f0;padding-top:1rem;margin-bottom:1rem;">
+    <h3 style="font-size:0.875rem;font-weight:600;margin-bottom:0.75rem;color:#4a5568;">Welcome Config</h3>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Template (use {name} and {username} as placeholders)</label>
+      <textarea name="config_template" rows="4" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;"><%= fd.config_template || (ruleConfig.template || '') %></textarea>
+    </div>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Delay (seconds, optional)</label>
+      <input type="number" name="config_delay_seconds" min="0" value="<%= fd.config_delay_seconds || (ruleConfig.delay_seconds || '') %>" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    </div>
+  </div>
+
+  <!-- Auto-kick config -->
+  <div id="config-auto_kick_inactive" style="display:none;border-top:1px solid #e2e8f0;padding-top:1rem;margin-bottom:1rem;">
+    <h3 style="font-size:0.875rem;font-weight:600;margin-bottom:0.75rem;color:#4a5568;">Auto-Kick Config</h3>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Threshold (days of inactivity)</label>
+      <input type="number" name="config_threshold_days" min="1" value="<%= fd.config_threshold_days || (ruleConfig.threshold_days || 30) %>" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" required />
+    </div>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+        <input type="checkbox" name="config_dry_run" value="on"
+          <%= fd.config_dry_run === 'on' || (ruleConfig.dry_run === true) ? 'checked' : '' %>
+          style="width:1rem;height:1rem;" />
+        Dry Run (log only, don't actually kick)
+      </label>
+    </div>
+  </div>
+
+  <!-- Anti-spam config -->
+  <div id="config-anti_spam" style="display:none;border-top:1px solid #e2e8f0;padding-top:1rem;margin-bottom:1rem;">
+    <h3 style="font-size:0.875rem;font-weight:600;margin-bottom:0.75rem;color:#4a5568;">Anti-Spam Config</h3>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Patterns (one regex per line)</label>
+      <textarea name="config_patterns" rows="4" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;font-family:monospace;resize:vertical;"><%= fd.config_patterns || (ruleConfig.patterns ? ruleConfig.patterns.join('\n') : '') %></textarea>
+    </div>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Action</label>
+      <select name="config_action" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+        <option value="delete" <%= (fd.config_action || ruleConfig.action) === 'delete' ? 'selected' : '' %>>Delete message only</option>
+        <option value="mute" <%= (fd.config_action || ruleConfig.action) === 'mute' ? 'selected' : '' %>>Delete + Mute sender</option>
+        <option value="kick" <%= (fd.config_action || ruleConfig.action) === 'kick' ? 'selected' : '' %>>Delete + Kick sender</option>
+      </select>
+    </div>
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:block;font-size:0.75rem;color:#718096;margin-bottom:0.25rem;">Mute Duration (seconds, only for mute action)</label>
+      <input type="number" name="config_mute_duration_seconds" min="1" value="<%= fd.config_mute_duration_seconds || (ruleConfig.mute_duration_seconds || 3600) %>" style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    </div>
+  </div>
+
+  <button type="submit" style="padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+    <%= isEdit ? 'Update Rule' : 'Create Rule' %>
+  </button>
+</form>
+
+<script>
+function toggleConfigFields() {
+  var kind = document.getElementById('rule-kind').value;
+  document.getElementById('config-welcome').style.display = kind === 'welcome' ? 'block' : 'none';
+  document.getElementById('config-auto_kick_inactive').style.display = kind === 'auto_kick_inactive' ? 'block' : 'none';
+  document.getElementById('config-anti_spam').style.display = kind === 'anti_spam' ? 'block' : 'none';
+}
+// Run on page load
+toggleConfigFields();
+</script>

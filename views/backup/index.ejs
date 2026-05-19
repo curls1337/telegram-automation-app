@@ -1,0 +1,172 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Backup & Restore' %></h1>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fed7d7;color:#9b2c2c;border-radius:4px;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<% if (typeof success !== 'undefined' && success) { %>
+  <div style="padding:0.75rem 1rem;background:#f0fff4;color:#276749;border-radius:4px;margin-bottom:1rem;font-size:0.875rem;">
+    <%= success %>
+  </div>
+<% } %>
+
+<!-- Export & Import Forms -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+  <!-- Export Form -->
+  <div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <h2 style="font-size:1.125rem;font-weight:600;margin-bottom:1rem;">Export Backup</h2>
+    <p style="color:#718096;font-size:0.875rem;margin-bottom:1rem;">
+      Create an encrypted backup of all your tenant data. You will need the passphrase to restore it later.
+    </p>
+    <form method="POST" action="/backup/export">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+      <div style="margin-bottom:1rem;">
+        <label for="export_passphrase" style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">
+          Passphrase <span style="color:#e53e3e;">*</span>
+        </label>
+        <input
+          type="password"
+          id="export_passphrase"
+          name="passphrase"
+          required
+          minlength="8"
+          placeholder="Minimum 8 characters"
+          style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;"
+          autocomplete="new-password"
+        />
+        <p style="color:#a0aec0;font-size:0.75rem;margin-top:0.25rem;">
+          Remember this passphrase — it cannot be recovered.
+        </p>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+          <input type="checkbox" name="skip_media" value="on" />
+          Skip media history (reduces file size)
+        </label>
+      </div>
+      <button type="submit" style="padding:0.5rem 1rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+        Request Export
+      </button>
+    </form>
+  </div>
+
+  <!-- Import Form -->
+  <div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <h2 style="font-size:1.125rem;font-weight:600;margin-bottom:1rem;">Import Backup</h2>
+    <p style="color:#718096;font-size:0.875rem;margin-bottom:1rem;">
+      Restore data from a previously exported backup file. Provide the same passphrase used during export.
+    </p>
+    <form method="POST" action="/backup/import" enctype="multipart/form-data">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+      <div style="margin-bottom:1rem;">
+        <label for="backup_file" style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">
+          Backup File <span style="color:#e53e3e;">*</span>
+        </label>
+        <input
+          type="file"
+          id="backup_file"
+          name="backup_file"
+          required
+          accept=".enc"
+          style="width:100%;padding:0.5rem 0;font-size:0.875rem;"
+        />
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label for="import_passphrase" style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">
+          Passphrase <span style="color:#e53e3e;">*</span>
+        </label>
+        <input
+          type="password"
+          id="import_passphrase"
+          name="passphrase"
+          required
+          minlength="8"
+          placeholder="Enter the export passphrase"
+          style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;"
+          autocomplete="off"
+        />
+      </div>
+      <button type="submit" style="padding:0.5rem 1rem;background:#38a169;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;"
+              onclick="return confirm('This will restore data from the backup. Existing data will not be overwritten. Continue?')">
+        Import Backup
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Backup History -->
+<div style="background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);overflow:hidden;">
+  <h2 style="font-size:1.125rem;font-weight:600;padding:1rem 1.5rem;border-bottom:1px solid #e2e8f0;">Backup History</h2>
+
+  <% if (typeof backups !== 'undefined' && backups.length > 0) { %>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+          <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Date</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Size</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">SHA-256</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% backups.forEach(function(backup) { %>
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#4a5568;">
+              <%= backup.created_at ? new Date(backup.created_at).toLocaleString() : '—' %>
+            </td>
+            <td style="padding:0.75rem 1rem;">
+              <% if (backup.status === 'pending') { %>
+                <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#ebf8ff;color:#2b6cb0;">Pending</span>
+              <% } else if (backup.status === 'running') { %>
+                <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fefcbf;color:#975a16;">Running</span>
+              <% } else if (backup.status === 'completed') { %>
+                <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Completed</span>
+              <% } else if (backup.status === 'failed') { %>
+                <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fed7d7;color:#9b2c2c;">Failed</span>
+              <% } else { %>
+                <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f7fafc;color:#718096;"><%= backup.status %></span>
+              <% } %>
+              <% if (backup.error) { %>
+                <p style="font-size:0.7rem;color:#9b2c2c;margin-top:0.25rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<%= backup.error %>">
+                  <%= backup.error %>
+                </p>
+              <% } %>
+            </td>
+            <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#718096;">
+              <% if (backup.size_bytes) { %>
+                <%= (backup.size_bytes / (1024 * 1024)).toFixed(2) %> MB
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+            <td style="padding:0.75rem 1rem;font-size:0.75rem;color:#718096;font-family:monospace;">
+              <% if (backup.sha256) { %>
+                <span title="<%= backup.sha256 %>"><%= backup.sha256.substring(0, 16) %>…</span>
+              <% } else { %>
+                —
+              <% } %>
+            </td>
+            <td style="padding:0.75rem 1rem;">
+              <% if (backup.status === 'completed' && backup.object_key) { %>
+                <a href="/backup/<%= backup.id %>"
+                   style="padding:0.25rem 0.5rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.75rem;text-decoration:none;"
+                   target="_blank">
+                  Download
+                </a>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <div style="text-align:center;padding:2rem;color:#718096;">
+      <p>No backups yet. Create your first export above.</p>
+    </div>
+  <% } %>
+</div>

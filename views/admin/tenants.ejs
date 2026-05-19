@@ -1,0 +1,62 @@
+<h1>Tenants</h1>
+
+<% if (typeof success !== 'undefined' && success) { %>
+  <div style="background:#d4edda;border:1px solid #c3e6cb;padding:0.75rem 1rem;border-radius:4px;margin-bottom:1rem;color:#155724;">
+    <%= success %>
+  </div>
+<% } %>
+
+<section style="padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <% if (typeof tenants !== 'undefined' && tenants.length > 0) { %>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+        <thead>
+          <tr style="background:#f1f3f5;text-align:left;">
+            <th style="padding:0.5rem;">Name</th>
+            <th style="padding:0.5rem;">Status</th>
+            <th style="padding:0.5rem;">Plan</th>
+            <th style="padding:0.5rem;">Subscription</th>
+            <th style="padding:0.5rem;">Members</th>
+            <th style="padding:0.5rem;">Created</th>
+            <th style="padding:0.5rem;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% tenants.forEach(function(tenant) { %>
+            <tr style="border-bottom:1px solid #e9ecef;">
+              <td style="padding:0.5rem;font-weight:500;"><%= tenant.name %></td>
+              <td style="padding:0.5rem;">
+                <% if (tenant.status === 'active') { %>
+                  <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Active</span>
+                <% } else { %>
+                  <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fed7d7;color:#9b2c2c;"><%= tenant.status %></span>
+                <% } %>
+              </td>
+              <td style="padding:0.5rem;"><%= tenant.plan_name || '—' %></td>
+              <td style="padding:0.5rem;">
+                <% if (tenant.subscription_status === 'active') { %>
+                  <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#ebf8ff;color:#2b6cb0;">Active</span>
+                <% } else if (tenant.subscription_status) { %>
+                  <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fefcbf;color:#975a16;"><%= tenant.subscription_status %></span>
+                <% } else { %>
+                  <span style="color:#718096;">None</span>
+                <% } %>
+              </td>
+              <td style="padding:0.5rem;"><%= tenant.member_count || 0 %></td>
+              <td style="padding:0.5rem;color:#718096;font-size:0.85rem;">
+                <%= tenant.created_at ? new Date(tenant.created_at).toLocaleDateString() : '—' %>
+              </td>
+              <td style="padding:0.5rem;">
+                <a href="/dashboard?as_tenant=<%= tenant.id %>" style="display:inline-block;padding:0.25rem 0.5rem;background:#3182ce;color:#fff;border-radius:3px;font-size:0.75rem;text-decoration:none;">
+                  Impersonate
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p style="color:#666;">No tenants found.</p>
+  <% } %>
+</section>

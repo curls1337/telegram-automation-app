@@ -1,0 +1,60 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Connections' %></h1>
+  <a href="/connections/new-bot" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+    + Add Bot
+  </a>
+</div>
+
+<% if (typeof connections !== 'undefined' && connections.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Name</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Type</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Username</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Mode</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% connections.forEach(function(conn) { %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;">
+            <a href="/connections/<%= conn.id %>"><%= conn.display_name || 'Unnamed' %></a>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:<%= conn.kind === 'bot' ? '#ebf8ff' : '#faf5ff' %>;color:<%= conn.kind === 'bot' ? '#2b6cb0' : '#6b46c1' %>;">
+              <%= conn.kind === 'bot' ? 'Bot' : 'User' %>
+            </span>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;">
+            <%= conn.username ? '@' + conn.username : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (conn.status === 'active') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Active</span>
+            <% } else if (conn.status === 'invalid') { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fff5f5;color:#c53030;">Invalid</span>
+            <% } else { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fffaf0;color:#c05621;"><%= conn.status %></span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= conn.mode || '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= conn.created_at ? new Date(conn.created_at).toLocaleDateString() : '—' %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;margin-bottom:1rem;">No connections yet. Add your first bot to get started.</p>
+    <a href="/connections/new-bot" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+      + Add Bot Connection
+    </a>
+  </div>
+<% } %>

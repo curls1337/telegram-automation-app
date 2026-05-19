@@ -1,0 +1,134 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Webhook Detail' %></h1>
+  <a href="/webhooks" style="font-size:0.875rem;color:#3182ce;">← Back to Webhooks</a>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fed7d7;color:#c53030;border-radius:4px;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<% if (typeof webhook !== 'undefined' && webhook) { %>
+  <!-- Edit form -->
+  <div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h2 style="font-size:1rem;font-weight:600;">Configuration</h2>
+      <div style="display:flex;gap:0.5rem;">
+        <!-- Test delivery button -->
+        <form method="POST" action="/webhooks/<%= webhook.id %>/test" style="display:inline;">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button type="submit" style="padding:0.375rem 0.75rem;background:#38a169;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">
+            Send Test
+          </button>
+        </form>
+        <!-- Delete button -->
+        <form method="POST" action="/webhooks/<%= webhook.id %>/delete" style="display:inline;"
+          onsubmit="return confirm('Delete this webhook and all delivery history?');">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button type="submit" style="padding:0.375rem 0.75rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <form method="POST" action="/webhooks/<%= webhook.id %>">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+      <!-- Status -->
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Status</label>
+        <select name="status" style="padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+          <option value="active" <%= webhook.status === 'active' ? 'selected' : '' %>>Active</option>
+          <option value="disabled" <%= webhook.status === 'disabled' ? 'selected' : '' %>>Disabled</option>
+        </select>
+        <% if (webhook.consecutive_failures > 0) { %>
+          <span style="margin-left:0.5rem;font-size:0.75rem;color:#c53030;">
+            (<%= webhook.consecutive_failures %> consecutive failure<%= webhook.consecutive_failures !== 1 ? 's' : '' %>)
+          </span>
+        <% } %>
+      </div>
+
+      <!-- URL -->
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Endpoint URL</label>
+        <input type="url" name="url" required value="<%= webhook.url %>"
+          style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+      </div>
+
+      <!-- Secret -->
+      <div style="margin-bottom:1rem;">
+        <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Signing Secret (leave blank to keep current)</label>
+        <input type="text" name="secret" placeholder="Enter new secret to change"
+          style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+      </div>
+
+      <!-- Events -->
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.5rem;">Events</label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:0.5rem;">
+          <% if (typeof events !== 'undefined') { %>
+            <% var whEvents = Array.isArray(webhook.events) ? webhook.events : []; %>
+            <% events.forEach(function(evt) { %>
+              <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;cursor:pointer;">
+                <input type="checkbox" name="events" value="<%= evt %>" <%= whEvents.includes(evt) ? 'checked' : '' %> />
+                <%= evt %>
+              </label>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" style="padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+        Save Changes
+      </button>
+    </form>
+  </div>
+
+  <!-- Delivery history -->
+  <div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Delivery History</h2>
+
+    <% if (typeof deliveries !== 'undefined' && deliveries.length > 0) { %>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+            <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;text-transform:uppercase;color:#718096;">Event</th>
+            <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;text-transform:uppercase;color:#718096;">Status Code</th>
+            <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;text-transform:uppercase;color:#718096;">Attempt</th>
+            <th style="padding:0.5rem 0.75rem;text-align:left;font-size:0.7rem;text-transform:uppercase;color:#718096;">Delivered At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% deliveries.forEach(function(d) { %>
+            <tr style="border-bottom:1px solid #e2e8f0;">
+              <td style="padding:0.5rem 0.75rem;font-size:0.8rem;"><%= d.event %></td>
+              <td style="padding:0.5rem 0.75rem;font-size:0.8rem;">
+                <% if (d.status_code >= 200 && d.status_code < 300) { %>
+                  <span style="color:#276749;font-weight:500;"><%= d.status_code %></span>
+                <% } else if (d.status_code === 0) { %>
+                  <span style="color:#c53030;">Network Error</span>
+                <% } else { %>
+                  <span style="color:#c53030;font-weight:500;"><%= d.status_code %></span>
+                <% } %>
+              </td>
+              <td style="padding:0.5rem 0.75rem;font-size:0.8rem;color:#718096;"><%= d.attempt %></td>
+              <td style="padding:0.5rem 0.75rem;font-size:0.8rem;color:#718096;">
+                <%= d.delivered_at ? new Date(d.delivered_at).toLocaleString() : '—' %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p style="color:#718096;font-size:0.875rem;text-align:center;padding:1rem;">No deliveries yet.</p>
+    <% } %>
+  </div>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;">Webhook not found.</p>
+    <a href="/webhooks" style="color:#3182ce;font-size:0.875rem;">← Back to Webhooks</a>
+  </div>
+<% } %>

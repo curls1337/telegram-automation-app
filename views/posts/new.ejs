@@ -1,0 +1,113 @@
+<div class="page-header" style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'New Scheduled Post' %></h1>
+  <p style="color:#718096;margin-top:0.25rem;">Schedule a message to be sent at a specific time.</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #feb2b2;border-radius:4px;color:#c53030;margin-bottom:1rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<form method="POST" action="/posts" style="background:#fff;padding:1.5rem;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:600px;">
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+  <!-- Connection -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="connection_id" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.25rem;">
+      Connection *
+    </label>
+    <select id="connection_id" name="connection_id" required
+            style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="">Select a connection...</option>
+      <% if (typeof connections !== 'undefined') { %>
+        <% connections.forEach(function(conn) { %>
+          <option value="<%= conn.id %>" <%= (typeof formData !== 'undefined' && formData.connection_id === conn.id) ? 'selected' : '' %>>
+            <%= conn.display_name || conn.username || conn.id %> (<%= conn.kind %>)
+          </option>
+        <% }); %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- Target Chat -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="target_chat" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.25rem;">
+      Target Chat *
+    </label>
+    <input type="text" id="target_chat" name="target_chat" required
+           placeholder="Chat ID or @username"
+           value="<%= (typeof formData !== 'undefined' && formData.target_chat) ? formData.target_chat : '' %>"
+           style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    <p style="font-size:0.75rem;color:#a0aec0;margin-top:0.25rem;">Enter a chat ID (e.g., -1001234567890) or @username</p>
+  </div>
+
+  <!-- Message Text -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="message_text" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.25rem;">
+      Message
+    </label>
+    <textarea id="message_text" name="message_text" rows="5"
+              placeholder="Enter your message text..."
+              style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;"><%= (typeof formData !== 'undefined' && formData.message_text) ? formData.message_text : '' %></textarea>
+    <p style="font-size:0.75rem;color:#a0aec0;margin-top:0.25rem;">Supports Telegram formatting (HTML or Markdown)</p>
+  </div>
+
+  <!-- Schedule DateTime -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="run_at" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.25rem;">
+      Schedule Date & Time *
+    </label>
+    <input type="datetime-local" id="run_at" name="run_at" required
+           value="<%= (typeof formData !== 'undefined' && formData.run_at) ? formData.run_at : '' %>"
+           style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    <p style="font-size:0.75rem;color:#a0aec0;margin-top:0.25rem;">Must be in the future. Time is in your local timezone.</p>
+  </div>
+
+  <!-- Repeat -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="repeat_type" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.25rem;">
+      Repeat
+    </label>
+    <select id="repeat_type" name="repeat_type"
+            style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="none" <%= (typeof formData !== 'undefined' && formData.repeat_type === 'none') ? 'selected' : '' %>>No repeat (one-time)</option>
+      <option value="daily" <%= (typeof formData !== 'undefined' && formData.repeat_type === 'daily') ? 'selected' : '' %>>Daily</option>
+      <option value="weekly" <%= (typeof formData !== 'undefined' && formData.repeat_type === 'weekly') ? 'selected' : '' %>>Weekly</option>
+      <option value="monthly" <%= (typeof formData !== 'undefined' && formData.repeat_type === 'monthly') ? 'selected' : '' %>>Monthly</option>
+    </select>
+  </div>
+
+  <!-- Media (optional) -->
+  <div style="margin-bottom:1.5rem;">
+    <label for="media_ids" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.25rem;">
+      Media (optional)
+    </label>
+    <input type="text" id="media_ids" name="media_ids"
+           placeholder="Media file ID (from Media Library)"
+           value="<%= (typeof formData !== 'undefined' && formData.media_ids) ? formData.media_ids : '' %>"
+           style="width:100%;padding:0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    <p style="font-size:0.75rem;color:#a0aec0;margin-top:0.25rem;">Upload media in the <a href="/media" style="color:#3182ce;">Media Library</a> first, then paste the file ID here.</p>
+  </div>
+
+  <!-- Submit -->
+  <div style="display:flex;gap:0.75rem;">
+    <button type="submit" style="padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+      Schedule Post
+    </button>
+    <a href="/posts" style="padding:0.5rem 1.5rem;background:#edf2f7;color:#4a5568;border-radius:4px;font-size:0.875rem;text-decoration:none;display:inline-flex;align-items:center;">
+      Cancel
+    </a>
+  </div>
+</form>
+
+<script>
+  // Convert datetime-local to ISO string on form submit
+  document.querySelector('form').addEventListener('submit', function(e) {
+    var input = document.getElementById('run_at');
+    if (input.value) {
+      var localDate = new Date(input.value);
+      input.value = localDate.toISOString();
+    }
+  });
+</script>

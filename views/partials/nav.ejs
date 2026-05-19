@@ -1,0 +1,28 @@
+<header style="background: #1a202c; color: #fff; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <a href="/dashboard" style="color: #fff; font-weight: bold; font-size: 1.1rem; text-decoration: none;">
+      Telegram Automation
+    </a>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <% if (typeof locale !== 'undefined') { %>
+      <select id="locale-switcher" style="background: #2d3748; color: #fff; border: 1px solid #4a5568; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+        <option value="en" <%= locale === 'en' ? 'selected' : '' %>>EN</option>
+        <option value="id" <%= locale === 'id' ? 'selected' : '' %>>ID</option>
+      </select>
+    <% } %>
+
+    <% if (typeof user !== 'undefined' && user) { %>
+      <span style="font-size: 0.875rem; color: #cbd5e0;"><%= user.email %></span>
+      <form action="/logout" method="POST" style="display: inline; margin: 0;">
+        <% if (typeof csrfToken !== 'undefined') { %>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <% } %>
+        <button type="submit" style="background: none; border: 1px solid #4a5568; color: #cbd5e0; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+          <%= typeof t === 'function' ? t('nav.logout') : 'Logout' %>
+        </button>
+      </form>
+    <% } %>
+  </div>
+</header>

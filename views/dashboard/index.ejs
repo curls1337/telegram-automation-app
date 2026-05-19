@@ -1,0 +1,47 @@
+<% var title = typeof t === 'function' ? t('dashboard.title') : 'Dashboard'; %>
+
+<h1 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">
+  <%= typeof t === 'function' ? t('dashboard.title') : 'Dashboard' %>
+</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+  <!-- Connections Card -->
+  <div style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.25rem;">
+    <div style="font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">
+      <%= typeof t === 'function' ? t('dashboard.connections') : 'Connections' %>
+    </div>
+    <div style="font-size: 1.75rem; font-weight: bold; color: #2d3748;">
+      <%= typeof connectionsCount !== 'undefined' ? connectionsCount : 0 %>
+    </div>
+  </div>
+
+  <!-- Scheduled Posts Card -->
+  <div style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.25rem;">
+    <div style="font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">
+      <%= typeof t === 'function' ? t('dashboard.scheduled_posts') : 'Scheduled Posts' %>
+    </div>
+    <div style="font-size: 1.75rem; font-weight: bold; color: #2d3748;">
+      <%= typeof scheduledCount !== 'undefined' ? scheduledCount : 0 %>
+    </div>
+  </div>
+
+  <!-- Broadcasts Card -->
+  <div style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.25rem;">
+    <div style="font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">
+      <%= typeof t === 'function' ? t('dashboard.broadcasts') : 'Broadcasts' %>
+    </div>
+    <div style="font-size: 1.75rem; font-weight: bold; color: #2d3748;">
+      <%= typeof broadcastsCount !== 'undefined' ? broadcastsCount : 0 %>
+    </div>
+  </div>
+
+  <!-- Subscribers Card -->
+  <div style="background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); padding: 1.25rem;">
+    <div style="font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">
+      <%= typeof t === 'function' ? t('dashboard.subscribers') : 'Subscribers' %>
+    </div>
+    <div style="font-size: 1.75rem; font-weight: bold; color: #2d3748;">
+      <%= typeof subscribersCount !== 'undefined' ? subscribersCount : 0 %>
+    </div>
+  </div>
+</div>

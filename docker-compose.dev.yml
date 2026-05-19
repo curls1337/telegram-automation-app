@@ -1,0 +1,95 @@
+# Docker Compose configuration for local development.
+#
+# Provides Postgres, Redis, and MinIO (S3-compatible) so the app can run
+# against the same set of managed services it expects in production.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   docker compose -f docker-compose.dev.yml down
+#   docker compose -f docker-compose.dev.yml down -v    # also drop data volumes
+#
+# Default credentials match the values in `.env.example`. Do NOT reuse them
+# outside of local development.
+
+name: telegram-automation-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tgapp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: telegram_automation
+      # Speed up local startup; lc_collate/ctype default fine for dev.
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d telegram_automation"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: tgapp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  minio:
+    image: minio/minio:latest
+    container_name: tgapp-minio
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minioadmin
+      # Region must match OBJECT_STORAGE_REGION in .env.example.
+      MINIO_REGION_NAME: us-east-1
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # One-shot helper that creates the default bucket on first boot so the
+  # app does not have to handle bucket bootstrap. Exits 0 once provisioned.
+  minio-setup:
+    image: minio/mc:latest
+    container_name: tgapp-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 minio minioadmin &&
+        mc mb --ignore-existing local/tgapp-dev &&
+        mc anonymous set download local/tgapp-dev || true
+      "
+    restart: "no"
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

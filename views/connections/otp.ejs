@@ -1,0 +1,58 @@
+<div style="max-width:480px;margin:0 auto;">
+  <h1 style="font-size:1.5rem;font-weight:600;margin-bottom:1.5rem;"><%= typeof title !== 'undefined' ? title : 'Enter OTP Code' %></h1>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #feb2b2;border-radius:4px;color:#c53030;margin-bottom:1rem;font-size:0.875rem;" role="alert">
+      <%= error %>
+    </div>
+  <% } %>
+
+  <div style="background:#fff;padding:1.5rem;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="font-size:0.875rem;color:#4a5568;margin-bottom:1.25rem;">
+      A verification code has been sent to your Telegram app. Please enter it below.
+    </p>
+
+    <form method="POST" action="/connections/user/otp">
+      <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% } %>
+      <input type="hidden" name="loginId" value="<%= typeof loginId !== 'undefined' ? loginId : '' %>">
+
+      <div style="margin-bottom:1.25rem;">
+        <label for="code" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+          OTP Code
+        </label>
+        <input
+          type="text"
+          id="code"
+          name="code"
+          placeholder="12345"
+          required
+          autocomplete="one-time-code"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="6"
+          style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:1.25rem;font-family:monospace;text-align:center;letter-spacing:0.25em;"
+          aria-describedby="code-help"
+        >
+        <p id="code-help" style="margin-top:0.375rem;font-size:0.75rem;color:#718096;">
+          Check your Telegram app for the verification code.
+        </p>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;align-items:center;">
+        <button
+          type="submit"
+          style="padding:0.5rem 1.25rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;"
+        >
+          Verify Code
+        </button>
+        <a href="/connections" style="font-size:0.875rem;color:#718096;">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <div style="margin-top:1rem;padding:0.75rem 1rem;background:#fffbeb;border:1px solid #fbbf24;border-radius:4px;font-size:0.8125rem;color:#92400e;">
+    <strong>Note:</strong> The code expires in 10 minutes. If you don't receive it, check your Telegram app's "Saved Messages" or try again.
+  </div>
+</div>

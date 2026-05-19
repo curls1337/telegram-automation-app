@@ -1,0 +1,107 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'API Keys' %></h1>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fed7d7;color:#c53030;border-radius:4px;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<% if (typeof newKey !== 'undefined' && newKey) { %>
+  <div style="padding:1rem;background:#f0fff4;border:1px solid #c6f6d5;border-radius:8px;margin-bottom:1.5rem;">
+    <p style="font-weight:600;color:#276749;margin-bottom:0.5rem;">API Key Created Successfully</p>
+    <p style="font-size:0.875rem;color:#4a5568;margin-bottom:0.5rem;">
+      Copy this key now. You won't be able to see it again!
+    </p>
+    <div style="background:#1a202c;color:#68d391;padding:0.75rem 1rem;border-radius:4px;font-family:monospace;font-size:0.875rem;word-break:break-all;">
+      <%= newKey.plaintext %>
+    </div>
+  </div>
+<% } %>
+
+<!-- Create new key form -->
+<div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+  <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Create New API Key</h2>
+  <form method="POST" action="/api-keys" style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+    <div style="flex:1;min-width:200px;">
+      <label style="display:block;font-size:0.75rem;text-transform:uppercase;color:#718096;margin-bottom:0.25rem;">Name</label>
+      <input type="text" name="name" required placeholder="e.g. Production Key"
+        style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <label style="display:block;font-size:0.75rem;text-transform:uppercase;color:#718096;margin-bottom:0.25rem;">Scopes (comma-separated)</label>
+      <input type="text" name="scopes" placeholder="e.g. read,write"
+        style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;" />
+    </div>
+    <button type="submit" style="padding:0.5rem 1rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">
+      Create Key
+    </button>
+  </form>
+</div>
+
+<!-- Keys list -->
+<% if (typeof keys !== 'undefined' && keys.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Name</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Scopes</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Last Used</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Created</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% keys.forEach(function(key) { %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;font-weight:500;">
+            <%= key.name %>
+          </td>
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#4a5568;">
+            <% var scopeList = Array.isArray(key.scopes) ? key.scopes : []; %>
+            <% if (scopeList.length > 0) { %>
+              <% scopeList.forEach(function(scope) { %>
+                <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.7rem;background:#ebf8ff;color:#2b6cb0;margin-right:0.25rem;"><%= scope %></span>
+              <% }); %>
+            <% } else { %>
+              <span style="color:#a0aec0;font-size:0.75rem;">All</span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= key.last_used_at ? new Date(key.last_used_at).toLocaleString() : 'Never' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= key.created_at ? new Date(key.created_at).toLocaleString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (key.revoked_at) { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#fed7d7;color:#c53030;">Revoked</span>
+            <% } else { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Active</span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (!key.revoked_at) { %>
+              <form method="POST" action="/api-keys/<%= key.id %>/revoke" style="display:inline;"
+                onsubmit="return confirm('Are you sure you want to revoke this API key? This cannot be undone.');">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+                <button type="submit" style="padding:0.25rem 0.5rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">
+                  Revoke
+                </button>
+              </form>
+            <% } else { %>
+              <span style="color:#a0aec0;font-size:0.75rem;">—</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;margin-bottom:1rem;">No API keys yet. Create your first key to access the REST API.</p>
+  </div>
+<% } %>

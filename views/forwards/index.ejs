@@ -1,0 +1,76 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Auto-Forwarding Rules' %></h1>
+  <a href="/forwards/new" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+    + New Forward Rule
+  </a>
+</div>
+
+<% if (typeof rules !== 'undefined' && rules.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Source Chat</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Destinations</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Status</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Remove Header</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Created</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% rules.forEach(function(rule) { %>
+        <% var dests = typeof rule.destinations === 'string' ? JSON.parse(rule.destinations) : (rule.destinations || []); %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;">
+            <a href="/forwards/<%= rule.id %>" style="color:#3182ce;">
+              <%= rule.source_chat %>
+            </a>
+          </td>
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#4a5568;">
+            <%= Array.isArray(dests) ? dests.length : 0 %> destination<%= (Array.isArray(dests) && dests.length !== 1) ? 's' : '' %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <% if (rule.is_active) { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f0fff4;color:#276749;">Active</span>
+            <% } else { %>
+              <span style="display:inline-block;padding:0.125rem 0.5rem;border-radius:9999px;font-size:0.75rem;background:#f7fafc;color:#718096;">Inactive</span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;font-size:0.875rem;color:#4a5568;">
+            <%= rule.remove_header ? 'Yes' : 'No' %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= rule.created_at ? new Date(rule.created_at).toLocaleString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;">
+            <form method="POST" action="/forwards/<%= rule.id %>/toggle" style="display:inline;margin-right:0.25rem;">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+              <button type="submit" style="padding:0.25rem 0.5rem;background:<%= rule.is_active ? '#dd6b20' : '#38a169' %>;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">
+                <%= rule.is_active ? 'Deactivate' : 'Activate' %>
+              </button>
+            </form>
+            <a href="/forwards/<%= rule.id %>" style="padding:0.25rem 0.5rem;font-size:0.75rem;color:#3182ce;">Edit</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <div style="margin-top:1rem;display:flex;gap:0.5rem;justify-content:center;">
+      <% for (var i = 1; i <= totalPages; i++) { %>
+        <a href="/forwards?page=<%= i %>"
+           style="padding:0.25rem 0.75rem;border-radius:4px;font-size:0.875rem;<%= i === page ? 'background:#3182ce;color:#fff;' : 'background:#edf2f7;color:#4a5568;' %>">
+          <%= i %>
+        </a>
+      <% } %>
+    </div>
+  <% } %>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;margin-bottom:1rem;">No forward rules yet. Create your first rule to auto-forward messages between chats.</p>
+    <a href="/forwards/new" style="display:inline-block;padding:0.5rem 1rem;background:#3182ce;color:#fff;border-radius:4px;font-size:0.875rem;">
+      + New Forward Rule
+    </a>
+  </div>
+<% } %>

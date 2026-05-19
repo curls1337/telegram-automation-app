@@ -1,0 +1,79 @@
+<h1>System Configuration</h1>
+
+<!-- Health Status Cards -->
+<section style="margin-bottom:1.5rem;">
+  <h2 style="font-size:1.1rem;margin-bottom:1rem;">Health Status</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;">
+    <!-- PostgreSQL -->
+    <div style="padding:1rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:4px solid <%= typeof health !== 'undefined' && health.postgres ? '#48bb78' : '#e53e3e' %>;">
+      <h3 style="font-size:0.9rem;color:#4a5568;margin-bottom:0.5rem;">PostgreSQL</h3>
+      <% if (typeof health !== 'undefined' && health.postgres) { %>
+        <span style="color:#48bb78;font-weight:600;">● Connected</span>
+      <% } else { %>
+        <span style="color:#e53e3e;font-weight:600;">● Disconnected</span>
+      <% } %>
+    </div>
+
+    <!-- Redis -->
+    <div style="padding:1rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:4px solid <%= typeof health !== 'undefined' && health.redis ? '#48bb78' : '#e53e3e' %>;">
+      <h3 style="font-size:0.9rem;color:#4a5568;margin-bottom:0.5rem;">Redis</h3>
+      <% if (typeof health !== 'undefined' && health.redis) { %>
+        <span style="color:#48bb78;font-weight:600;">● Connected</span>
+      <% } else { %>
+        <span style="color:#e53e3e;font-weight:600;">● Disconnected</span>
+      <% } %>
+    </div>
+
+    <!-- Queue Depths -->
+    <div style="padding:1rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:4px solid #3182ce;">
+      <h3 style="font-size:0.9rem;color:#4a5568;margin-bottom:0.5rem;">Queue Depths</h3>
+      <% if (typeof health !== 'undefined' && health.queues) { %>
+        <div style="font-size:0.8rem;color:#4a5568;">
+          <% Object.keys(health.queues).forEach(function(qName) { %>
+            <div style="display:flex;justify-content:space-between;padding:0.15rem 0;">
+              <span><%= qName %></span>
+              <span style="font-weight:500;"><%= health.queues[qName] %></span>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <span style="color:#718096;">Unavailable</span>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<!-- Environment Audit -->
+<section style="padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+  <h2 style="font-size:1.1rem;margin-bottom:1rem;">Environment Variables Audit</h2>
+  <p style="font-size:0.8rem;color:#718096;margin-bottom:1rem;">Shows whether each required environment variable is set. Values are never exposed.</p>
+
+  <% if (typeof envVars !== 'undefined' && envVars.length > 0) { %>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <thead>
+          <tr style="background:#f1f3f5;text-align:left;">
+            <th style="padding:0.5rem;">Variable</th>
+            <th style="padding:0.5rem;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% envVars.forEach(function(v) { %>
+            <tr style="border-bottom:1px solid #e9ecef;">
+              <td style="padding:0.4rem 0.5rem;font-family:monospace;font-size:0.8rem;"><%= v.name %></td>
+              <td style="padding:0.4rem 0.5rem;">
+                <% if (v.isSet) { %>
+                  <span style="color:#48bb78;font-size:0.8rem;">✓ Set</span>
+                <% } else { %>
+                  <span style="color:#e53e3e;font-size:0.8rem;">✗ Not set</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p style="color:#666;">No environment variable data available.</p>
+  <% } %>
+</section>

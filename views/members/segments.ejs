@@ -1,0 +1,141 @@
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'Segments' %></h1>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #fc8181;border-radius:4px;color:#c53030;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<!-- Create Segment Form -->
+<div style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:1.5rem;">
+  <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Create New Segment</h2>
+  <form method="post" action="/subscribers/segments" id="segment-form">
+    <% if (typeof csrfToken === 'function') { %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>" />
+    <% } %>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Segment Name</label>
+      <input type="text" name="name" placeholder="e.g. Active English Speakers" required style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;width:100%;max-width:400px;" />
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.25rem;">Logic</label>
+      <select id="segment-logic" style="padding:0.4rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+        <option value="and">AND (all conditions must match)</option>
+        <option value="or">OR (any condition matches)</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.5rem;">Conditions</label>
+      <div id="conditions-container"></div>
+      <button type="button" id="add-condition-btn" style="padding:0.4rem 0.75rem;background:#edf2f7;color:#4a5568;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;cursor:pointer;margin-top:0.5rem;">+ Add Condition</button>
+    </div>
+
+    <input type="hidden" name="predicate" id="predicate-input" />
+    <button type="submit" style="padding:0.5rem 1rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;">Create Segment</button>
+  </form>
+</div>
+
+<!-- Segments List -->
+<% if (typeof segments !== 'undefined' && segments.length > 0) { %>
+  <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <thead>
+      <tr style="background:#f7f8fa;border-bottom:1px solid #e2e8f0;">
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Name</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Conditions</th>
+        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;text-transform:uppercase;color:#718096;">Created</th>
+        <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;text-transform:uppercase;color:#718096;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% segments.forEach(function(seg) { %>
+        <% var pred = typeof seg.predicate === 'string' ? JSON.parse(seg.predicate) : (seg.predicate || { conditions: [] }); %>
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.75rem 1rem;font-weight:500;">
+            <%= seg.name %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <% if (pred.conditions && pred.conditions.length > 0) { %>
+              <% pred.conditions.forEach(function(c, i) { %>
+                <span style="display:inline-block;padding:0.125rem 0.4rem;background:#f7fafc;border:1px solid #e2e8f0;border-radius:4px;font-size:0.75rem;margin:0.125rem;">
+                  <%= c.field %> <%= c.operator %> <%= c.value %>
+                </span>
+                <% if (i < pred.conditions.length - 1) { %>
+                  <span style="font-size:0.7rem;color:#a0aec0;"><%= pred.logic || 'and' %></span>
+                <% } %>
+              <% }); %>
+            <% } else { %>
+              <span style="color:#a0aec0;">No conditions</span>
+            <% } %>
+          </td>
+          <td style="padding:0.75rem 1rem;color:#718096;font-size:0.875rem;">
+            <%= seg.created_at ? new Date(seg.created_at).toLocaleDateString() : '—' %>
+          </td>
+          <td style="padding:0.75rem 1rem;text-align:right;">
+            <form method="post" action="/subscribers/segments/<%= seg.id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this segment?');">
+              <% if (typeof csrfToken === 'function') { %>
+                <input type="hidden" name="_csrf" value="<%= csrfToken() %>" />
+              <% } %>
+              <button type="submit" style="padding:0.25rem 0.5rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div style="text-align:center;padding:3rem;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <p style="color:#718096;">No segments yet. Create your first segment above.</p>
+  </div>
+<% } %>
+
+<script>
+  var conditionCount = 0;
+  var fields = ['status', 'language_code', 'first_seen_at', 'last_active_at', 'tag'];
+  var operators = ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'contains', 'in'];
+
+  function addCondition() {
+    conditionCount++;
+    var container = document.getElementById('conditions-container');
+    var row = document.createElement('div');
+    row.id = 'condition-' + conditionCount;
+    row.style.cssText = 'display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;';
+
+    var fieldSelect = '<select class="cond-field" style="padding:0.4rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">';
+    fields.forEach(function(f) { fieldSelect += '<option value="' + f + '">' + f + '</option>'; });
+    fieldSelect += '</select>';
+
+    var opSelect = '<select class="cond-op" style="padding:0.4rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">';
+    operators.forEach(function(o) { opSelect += '<option value="' + o + '">' + o + '</option>'; });
+    opSelect += '</select>';
+
+    row.innerHTML = fieldSelect + opSelect +
+      '<input type="text" class="cond-value" placeholder="value" style="padding:0.4rem 0.5rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;flex:1;" />' +
+      '<button type="button" onclick="this.parentElement.remove()" style="padding:0.25rem 0.5rem;background:#e53e3e;color:#fff;border:none;border-radius:4px;font-size:0.75rem;cursor:pointer;">×</button>';
+
+    container.appendChild(row);
+  }
+
+  document.getElementById('add-condition-btn').addEventListener('click', addCondition);
+
+  document.getElementById('segment-form').addEventListener('submit', function(e) {
+    var conditions = [];
+    var rows = document.getElementById('conditions-container').children;
+    for (var i = 0; i < rows.length; i++) {
+      var field = rows[i].querySelector('.cond-field').value;
+      var op = rows[i].querySelector('.cond-op').value;
+      var val = rows[i].querySelector('.cond-value').value;
+      if (val) {
+        conditions.push({ field: field, operator: op, value: val });
+      }
+    }
+    var logic = document.getElementById('segment-logic').value;
+    document.getElementById('predicate-input').value = JSON.stringify({ conditions: conditions, logic: logic });
+  });
+
+  // Add one condition row by default
+  addCondition();
+</script>

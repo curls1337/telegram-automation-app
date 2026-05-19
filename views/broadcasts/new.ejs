@@ -1,0 +1,140 @@
+<div class="page-header" style="margin-bottom:1.5rem;">
+  <h1 style="font-size:1.5rem;font-weight:600;"><%= typeof title !== 'undefined' ? title : 'New Broadcast' %></h1>
+  <p style="color:#718096;margin-top:0.25rem;">Send a message to multiple subscribers at once.</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div style="padding:0.75rem 1rem;background:#fff5f5;border:1px solid #feb2b2;border-radius:4px;color:#c53030;margin-bottom:1rem;font-size:0.875rem;">
+    <%= error %>
+  </div>
+<% } %>
+
+<form method="POST" action="/broadcasts" style="background:#fff;border-radius:8px;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);max-width:640px;">
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+  <!-- Connection select -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="connection_id" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Connection *
+    </label>
+    <select id="connection_id" name="connection_id" required
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="">Select a connection...</option>
+      <% if (typeof connections !== 'undefined') { %>
+        <% connections.forEach(function(conn) { %>
+          <option value="<%= conn.id %>" <%= (typeof formData !== 'undefined' && formData.connection_id === conn.id) ? 'selected' : '' %>>
+            <%= conn.display_name || conn.username || conn.id %> (<%= conn.kind %>)
+          </option>
+        <% }); %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- Audience picker -->
+  <div style="margin-bottom:1.25rem;">
+    <label style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Audience *
+    </label>
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+        <input type="radio" name="audience_type" value="all"
+          <%= (typeof formData === 'undefined' || !formData.audience_type || formData.audience_type === 'all') ? 'checked' : '' %>
+          onchange="toggleAudienceFields()" />
+        All active subscribers
+      </label>
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+        <input type="radio" name="audience_type" value="segment"
+          <%= (typeof formData !== 'undefined' && formData.audience_type === 'segment') ? 'checked' : '' %>
+          onchange="toggleAudienceFields()" />
+        Segment
+      </label>
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.875rem;cursor:pointer;">
+        <input type="radio" name="audience_type" value="subscribers"
+          <%= (typeof formData !== 'undefined' && formData.audience_type === 'subscribers') ? 'checked' : '' %>
+          onchange="toggleAudienceFields()" />
+        Manual (subscriber IDs)
+      </label>
+    </div>
+  </div>
+
+  <!-- Segment dropdown (shown when audience_type=segment) -->
+  <div id="segment-field" style="margin-bottom:1.25rem;display:none;">
+    <label for="segment_id" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Select Segment
+    </label>
+    <select id="segment_id" name="segment_id"
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="">Select a segment...</option>
+      <% if (typeof segments !== 'undefined') { %>
+        <% segments.forEach(function(seg) { %>
+          <option value="<%= seg.id %>" <%= (typeof formData !== 'undefined' && formData.segment_id === seg.id) ? 'selected' : '' %>>
+            <%= seg.name %>
+          </option>
+        <% }); %>
+      <% } %>
+    </select>
+  </div>
+
+  <!-- Manual subscriber IDs (shown when audience_type=subscribers) -->
+  <div id="subscribers-field" style="margin-bottom:1.25rem;display:none;">
+    <label for="subscriber_ids" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Subscriber IDs (comma-separated)
+    </label>
+    <textarea id="subscriber_ids" name="subscriber_ids" rows="3"
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;"
+      placeholder="uuid-1, uuid-2, uuid-3"><%= (typeof formData !== 'undefined' && formData.subscriber_ids) ? formData.subscriber_ids : '' %></textarea>
+  </div>
+
+  <!-- Message textarea -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="message_text" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Message *
+    </label>
+    <textarea id="message_text" name="message_text" rows="5" required
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;resize:vertical;"
+      placeholder="Enter your broadcast message..."><%= (typeof formData !== 'undefined' && formData.message_text) ? formData.message_text : '' %></textarea>
+  </div>
+
+  <!-- Parse mode -->
+  <div style="margin-bottom:1.25rem;">
+    <label for="parse_mode" style="display:block;font-size:0.875rem;font-weight:500;color:#4a5568;margin-bottom:0.375rem;">
+      Parse Mode
+    </label>
+    <select id="parse_mode" name="parse_mode"
+      style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;border-radius:4px;font-size:0.875rem;">
+      <option value="">None (plain text)</option>
+      <option value="HTML" <%= (typeof formData !== 'undefined' && formData.parse_mode === 'HTML') ? 'selected' : '' %>>HTML</option>
+      <option value="Markdown" <%= (typeof formData !== 'undefined' && formData.parse_mode === 'Markdown') ? 'selected' : '' %>>Markdown</option>
+      <option value="MarkdownV2" <%= (typeof formData !== 'undefined' && formData.parse_mode === 'MarkdownV2') ? 'selected' : '' %>>MarkdownV2</option>
+    </select>
+  </div>
+
+  <!-- Submit -->
+  <div style="display:flex;gap:0.75rem;align-items:center;">
+    <button type="submit" style="padding:0.5rem 1.5rem;background:#3182ce;color:#fff;border:none;border-radius:4px;font-size:0.875rem;cursor:pointer;font-weight:500;">
+      Start Broadcast
+    </button>
+    <a href="/broadcasts" style="font-size:0.875rem;color:#718096;">Cancel</a>
+  </div>
+</form>
+
+<script>
+function toggleAudienceFields() {
+  var audienceType = document.querySelector('input[name="audience_type"]:checked');
+  var segmentField = document.getElementById('segment-field');
+  var subscribersField = document.getElementById('subscribers-field');
+
+  segmentField.style.display = 'none';
+  subscribersField.style.display = 'none';
+
+  if (audienceType) {
+    if (audienceType.value === 'segment') {
+      segmentField.style.display = 'block';
+    } else if (audienceType.value === 'subscribers') {
+      subscribersField.style.display = 'block';
+    }
+  }
+}
+// Initialize on page load
+toggleAudienceFields();
+</script>
