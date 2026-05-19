@@ -75,6 +75,11 @@ async function boot() {
     });
   }
 
+  // --- Root redirect ---
+  app.get('/', (req, res) => {
+    return res.redirect('/login');
+  });
+
   // --- Mount auth routes ---
   app.use('/', authRoutes);
 

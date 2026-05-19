@@ -44,6 +44,16 @@ function csrfMiddleware(req, res, next) {
     return next();
   }
 
+  // Skip health check endpoint
+  if (req.path === '/health' || req.path === '/health/deep') {
+    return next();
+  }
+
+  // Skip metrics endpoint
+  if (req.path === '/metrics') {
+    return next();
+  }
+
   // csurf requires req.session to be an object to store the secret.
   // If no session exists yet, create a minimal object for CSRF storage.
   if (!req.session) {
@@ -53,7 +63,18 @@ function csrfMiddleware(req, res, next) {
   // Apply csurf protection (validates token on mutating methods,
   // generates token function on all methods)
   csurfProtection(req, res, function afterCsurf(err) {
-    if (err) return next(err);
+    if (err) {
+      // If CSRF fails on a safe method (GET/HEAD/OPTIONS), skip gracefully
+      // This can happen when session/Redis is not yet available
+      const safeMethod = ['GET', 'HEAD', 'OPTIONS'].includes(req.method);
+      if (safeMethod && err.code === 'EBADCSRFTOKEN') {
+        // Provide a dummy csrfToken function for templates
+        res.locals.csrfToken = '';
+        req.csrfToken = () => '';
+        return next();
+      }
+      return next(err);
+    }
     // Attach token for EJS templates
     res.locals.csrfToken = req.csrfToken();
     return next();
