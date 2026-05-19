@@ -1,3 +1,2 @@
-release: npm run migrate
-web: node src/server/index.web.js
+web: npm run migrate && node src/server/index.web.js
 worker: node src/server/index.worker.js
