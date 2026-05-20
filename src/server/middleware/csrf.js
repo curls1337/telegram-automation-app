@@ -44,41 +44,39 @@ function csrfMiddleware(req, res, next) {
     return next();
   }
 
-  // Skip health check endpoint
-  if (req.path === '/health' || req.path === '/health/deep') {
-    return next();
-  }
-
-  // Skip metrics endpoint
-  if (req.path === '/metrics') {
+  // Skip health/metrics endpoints
+  if (req.path === '/health' || req.path === '/health/deep' || req.path === '/metrics') {
     return next();
   }
 
   // csurf requires req.session to be an object to store the secret.
-  // If no session exists yet, create a minimal object for CSRF storage.
   if (!req.session) {
     req.session = {};
   }
 
-  // Apply csurf protection (validates token on mutating methods,
-  // generates token function on all methods)
-  csurfProtection(req, res, function afterCsurf(err) {
-    if (err) {
-      // If CSRF fails on a safe method (GET/HEAD/OPTIONS), skip gracefully
-      // This can happen when session/Redis is not yet available
-      const safeMethod = ['GET', 'HEAD', 'OPTIONS'].includes(req.method);
-      if (safeMethod && err.code === 'EBADCSRFTOKEN') {
-        // Provide a dummy csrfToken function for templates
+  // For safe methods (GET, HEAD, OPTIONS), only generate token — never validate
+  const safeMethod = ['GET', 'HEAD', 'OPTIONS'].includes(req.method);
+
+  if (safeMethod) {
+    // Try to apply csurf to generate a token, but don't fail on errors
+    csurfProtection(req, res, function afterCsurf(err) {
+      if (err) {
+        // csurf failed (session issue, etc.) — provide empty token and continue
         res.locals.csrfToken = '';
         req.csrfToken = () => '';
         return next();
       }
-      return next(err);
-    }
-    // Attach token for EJS templates
-    res.locals.csrfToken = req.csrfToken();
-    return next();
-  });
+      res.locals.csrfToken = req.csrfToken();
+      return next();
+    });
+  } else {
+    // For mutating methods (POST, PUT, PATCH, DELETE), enforce CSRF
+    csurfProtection(req, res, function afterCsurf(err) {
+      if (err) return next(err);
+      res.locals.csrfToken = req.csrfToken();
+      return next();
+    });
+  }
 }
 
 /**
